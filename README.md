@@ -3,7 +3,7 @@
 
 ## 数据上链过程
 1. 下载公共数据
-	* [公共数据下载](https://github.com/unitedata-org-public/Documentation/blob/master/files/blacklist_26299805256485.csv)
+	* [公共数据下载](https://github.com/unitedata-org-public/Documentation/blob/master/files/blacklist_26299805256485.csv?raw=true)
 	* 请在测试链测试时加入以上数据，这部分数据为参与测试的几家均有的数据，可以用来测试存在用户
 2. 生成测试数据
 	* 参考使用说明3。
