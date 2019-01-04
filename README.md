@@ -1,6 +1,18 @@
 ## 环境要求
 * 系统中正确安装java8，并配置好JAVA_HOME环境变量。
 
+## 数据上链过程
+1. 下载公共数据
+	* [公共数据下载](https://github.com/unitedata-org-public/Documentation/blob/master/files/blacklist_26299805256485.csv)
+	* 请在测试链测试时加入以上数据，这部分数据为参与测试的几家均有的数据，可以用来测试存在用户
+2. 生成测试数据
+	* 参考使用说明3。
+3. 生成加密黑名单数据
+   * 参考使用说明1。
+4. 数据上传
+	* 详细请参见（通过数据桥接网关EDS上传）：https://github.com/unitedata-org-public/UD-Release/blob/master/ud-eds/1.8.2/PROOF.md
+
+
 ## 使用说明
 ### 1. 进行匿踪查询
 
