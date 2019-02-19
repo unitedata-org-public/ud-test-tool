@@ -27,7 +27,7 @@
 #### 执行查询命令
 
 1. 开启命令行，切换到本工具目录。
-2. 执行启动命令 ```java -jar test-tool.jar -s PREVIEW -a [account] -p [private-key] FILE```。FILE指向上一步生成的查询csv文件。
+2. 执行启动命令 ```java -jar test-tool.jar -s PREVIEW -a [account] -p [private-key] FILE```。FILE指向上一步生成的查询csv文件，`-a`是指链上用户名，`-p`是用户名对应私钥，`-s`是选择环境，预发链固定使用`PREVIEW`、正式链使用`PROD`，还可以加上`-o`指定输出文件名。
 3. 查询结束后，默认在当前目录生成```out.csv```，输出格式也是csv格式，对比输入文件增加第三列是否命中，true表示命中，error表示查询报错异常。
 
 ```
