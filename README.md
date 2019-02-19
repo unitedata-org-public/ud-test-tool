@@ -30,6 +30,11 @@
 2. 执行启动命令 ```java -jar test-tool.jar -s PREVIEW -a [account] -p [private-key] FILE```。FILE指向上一步生成的查询csv文件。
 3. 查询结束后，默认在当前目录生成```out.csv```，输出格式也是csv格式，对比输入文件增加第三列是否命中，true表示命中，error表示查询报错异常。
 
+```
+# 例子
+$ java -jar test-tool.jar  -o result.csv -s PREVIEW -a hushimorboz1 -p 5HtFFQLyNtFcdsQ68Vm55tgNbyvFsXGH2WjjjSpUXBECeuKpA8a query.csv
+```
+
 ### 2. 生成密文黑名单信息供eds上传
 
 * 准备明文，文件是csv格式，有三列数据，第一列是姓名，第二列是身份证号，第三列是逾期信息明文json，逗号间隔，结尾换行。
