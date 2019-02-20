@@ -10,7 +10,7 @@
 3. 生成加密黑名单数据
    * 参考使用说明1。
 4. 数据上传
-	* 详细请参见（通过数据桥接网关EDS上传）：https://github.com/unitedata-org-public/UD-Release/blob/master/ud-eds/1.8.2/PROOF.md
+	* 详细请参见（通过数据桥接网关EDS上传）：https://github.com/unitedata-org-public/UD-Release/tree/master/ud-eds/1.9.3.1
 
 
 ## 使用说明
