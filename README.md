@@ -63,7 +63,7 @@ $ java -jar test-tool.jar  -o result.csv -s PREVIEW -a hushimorboz1 -p 5HtFFQLyN
 
 ### 3. 生成测试用明文黑名单信息
 
-* 开启命令行，切换到本工具目录。命令为```java -jar test-tool.jar -o test.csv -gt -gtc 10000```, 其中```-c```是生成条数，默认是60000条。
+* 开启命令行，切换到本工具目录。命令为```java -jar test-tool.jar -o test.csv -gt -gtc 10000```, 其中```-gtc```是生成条数，默认是60000条。
 * 结束后，可以获取到生成csv文件，共三列: 姓名，身份证号，逾期信息。
 
 ## 参数介绍
