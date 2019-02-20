@@ -27,17 +27,37 @@
 #### 执行查询命令
 
 1. 开启命令行，切换到本工具目录。
-2. 执行启动命令 ```java -jar test-tool.jar -s PREVIEW -a [account] -p [private-key] FILE```。FILE指向上一步生成的查询csv文件。
+2. 执行启动命令 ```java -jar test-tool.jar -s PREVIEW -a [account] -p [private-key] FILE```。FILE指向上一步生成的查询csv文件，`-a`是指链上用户名，`-p`是用户名对应私钥，`-s`是选择环境，预发链固定使用`PREVIEW`、正式链使用`PROD`，还可以加上`-o`指定输出文件名。
 3. 查询结束后，默认在当前目录生成```out.csv```，输出格式也是csv格式，对比输入文件增加第三列是否命中，true表示命中，error表示查询报错异常。
+
+```
+# 例子
+$ java -jar test-tool.jar  -o result.csv -s PREVIEW -a hushimorboz1 -p 5HtFFQLyNtFcdsQ68Vm55tgNbyvFsXGH2WjjjSpUXBECeuKpA8a query.csv
+```
 
 ### 2. 生成密文黑名单信息供eds上传
 
-* 准备明文，文件是csv格式，有三列数据，第一列是姓名，第二列是身份证号，第三列是逾期信息明文json，逗号间隔，结尾换行。内容示例如下（逾期信息仅为示例，以实际为准，但必须是json）：
+* 准备明文，文件是csv格式，有三列数据，第一列是姓名，第二列是身份证号，第三列是逾期信息明文json，逗号间隔，结尾换行。
+* 关于逾期信息的格式介绍如下:
 
 ```
-张三,1231231245125125,{"detail":逾期信息A"}
-李四,1231231245125126,{"detail":逾期信息B"}
+{
+    // 逾期金额枚举：small（小 <2k）、middle（中 2k-3k）、big（大 >3k）
+    "amount": "big",
+    //逾期类型：M2,M3
+    "type": "M3",
+    //入黑时间戳（毫秒）
+    "into_time": "2019-01-01"
+}
 ```
+
+* 内容示例如下：
+
+```
+张三,1231231245125125,{"amount":"big","type":"M3","into_time":"2019-01-01"}
+李四,1231231245125126,{"amount":"middle","type":"M2","into_time":"2019-01-01"}
+```
+
 * 开启命令行，切换到本工具目录。将上述准备好的明文的文件，使用本工具转换成密文的csv文件。命令为```java -jar test-tool.jar -o upload.csv -gu FIlE```, 其中```upload.csv```是可自定义的输出文件路径。
 * 结束后，可以获取到生成csv文件，共五列: 逾期信息, 静态随机数, 二要素md5, 基础数据md5, 二要素凭证。
 
