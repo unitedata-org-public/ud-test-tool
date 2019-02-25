@@ -10,11 +10,11 @@
 3. 生成加密黑名单数据
    * 参考使用说明1。
 4. 数据上传
-	* 详细请参见（通过数据桥接网关EDS上传）：https://github.com/unitedata-org-public/UD-Release/blob/master/ud-eds/1.8.2/PROOF.md
+	* 详细请参见（通过数据桥接网关EDS上传）：https://github.com/unitedata-org-public/UD-Release/tree/master/ud-eds/1.9.3.1
 
 
 ## 使用说明
-### 1. 进行匿踪查询
+### 1. 进行查询
 
 #### 数据准备
 * 查询数据文件采用是csv格式。有两列数据，第一列是姓名，第二列是身份证号，逗号间隔，结尾换行。内容示例如下：
@@ -63,7 +63,7 @@ $ java -jar test-tool.jar  -o result.csv -s PREVIEW -a hushimorboz1 -p 5HtFFQLyN
 
 ### 3. 生成测试用明文黑名单信息
 
-* 开启命令行，切换到本工具目录。命令为```java -jar test-tool.jar -o test.csv -gt -gtc 10000```, 其中```-c```是生成条数，默认是60000条。
+* 开启命令行，切换到本工具目录。命令为```java -jar test-tool.jar -o test.csv -gt -gtc 10000```, 其中```-gtc```是生成条数，默认是60000条。
 * 结束后，可以获取到生成csv文件，共三列: 姓名，身份证号，逾期信息。
 
 ## 参数介绍
