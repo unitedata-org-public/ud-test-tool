@@ -18,7 +18,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -74,7 +77,6 @@ public class Main implements Runnable{
     public static final BlockingQueue<In> INPUT_QUEUE = new LinkedBlockingDeque<>();
     public static final BlockingQueue<String> OUTPUT_QUEUE = new LinkedBlockingDeque<>();
 
-
     public void run() {
         if (!(generateUploadCsv || generateQueryCsv || generateTestCsv)) {
             if (account == null || privateKey == null) {
@@ -94,7 +96,8 @@ public class Main implements Runnable{
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                         }
-                        Files.lines(path).map(l -> {
+                        Files.lines(path).filter(l -> l != null && l.length() > 0).map(l -> {
+                            l = l.replace("\uFEFF", "");
                             int first = l.indexOf('{');
                             int last = l.lastIndexOf('}');
                             if (last <= first) {
@@ -126,7 +129,10 @@ public class Main implements Runnable{
                                     }
                                 });
                     } else if (generateQueryCsv) {
-                        Files.lines(path).map(l -> l.trim().split(","))
+                        Files.lines(path).map(l -> {
+                            l = l.replace("\uFEFF", "");
+                            return l.trim().split(",");
+                        })
                                 .filter(params -> params.length >= 2)
                                 .forEach(params -> {
                                     try {
@@ -146,7 +152,7 @@ public class Main implements Runnable{
                                     try {
                                         INPUT_QUEUE.put(new In(md5Code, verifyMd5Code, requestedFactor));
                                     } catch (InterruptedException e) {
-                                        e.printStackTrace();
+                                        Thread.currentThread().interrupt();
                                     }
                                 });
 
@@ -154,6 +160,7 @@ public class Main implements Runnable{
                     }
 
                 } catch (IOException e) {
+                    e.printStackTrace();
                     throw new RuntimeException(e);
                 }
             }
@@ -172,14 +179,15 @@ public class Main implements Runnable{
         long readEnd = System.currentTimeMillis();
         log.info("读取内容共耗时 -> " + (readEnd - readBegin) + "毫秒");
         WriteTask writeTask;
+        int size = 0;
         if (generateUploadCsv || generateQueryCsv ) {
-            int size = OUTPUT_QUEUE.size();
+            size = OUTPUT_QUEUE.size();
             log.info("读入参数"+ size + "条");
             writeTask = new WriteTask(size, outFilePath);
         } else if (generateTestCsv) {
             writeTask = new WriteTask(testCsvCount, outFilePath);
         } else {
-            int size = INPUT_QUEUE.size();
+            size = INPUT_QUEUE.size();
             log.info("读入参数"+ size + "条");
             // 启动消费input
             DataQueryProtocol protocol =
@@ -202,6 +210,16 @@ public class Main implements Runnable{
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+            }
+        }
+
+        // 打印统计信息
+        if (!(generateUploadCsv || generateQueryCsv || generateTestCsv)) {
+            System.out.println("一共查询" + size + "条记录：");
+            System.out.println("总命中次数为： " + totalHit + "。");
+            // 打印统计信息
+            for (Map.Entry<String, ProviderStat> it : queryProviderStats.entrySet()) {
+                System.out.println(String.format("提供方账号名：%s，响应次数：%8d，命中次数：%8d", it.getKey(), it.getValue().getRespondCount(), it.getValue().getHitCount()));
             }
         }
 
@@ -229,12 +247,15 @@ public class Main implements Runnable{
         try {
             String twoHash = ProduceHashUtil.twoHash(params[0], params[1]);
             String random = String.valueOf(DateUtils.unixNano());
+//            String timestamp = String.valueOf(System.currentTimeMillis());
             stringBuffer
                     .append(params[2]).append(',')
+//                    .append(timestamp).append(',')
                     .append(random).append(',')
                     .append(twoHash).append(',')
                     .append(ProduceHashUtil.randomHash(twoHash, params[2])).append(',')
                     .append(ProduceHashUtil.randomHash(twoHash, random))
+//                    .append(ProduceHashUtil.privacyHash(twoHash, params[2],timestamp,random))
                     .append('\n');
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -323,5 +344,56 @@ public class Main implements Runnable{
             this.rpcServiceUrl = rpcServiceUrl;
         }
     }
+
+    private static final Map<String, ProviderStat> queryProviderStats = new ConcurrentHashMap<String, ProviderStat>();
+
+    private static long totalHit = 0;
+
+    public static void countProviderStat(String key, boolean hit) {
+        if (null == key) {
+            throw new NullPointerException("key不能为null");
+        }
+        ProviderStat providerStat = queryProviderStats.get(key);
+        if(null == providerStat) {
+            providerStat = new ProviderStat();
+            queryProviderStats.put(key, providerStat);
+        }
+        providerStat.countRespond();
+        if (hit) {
+            providerStat.countHit();
+        }
+    }
+    public synchronized static void countHit () {
+        ++totalHit;
+    }
+
+    public static class ProviderStat {
+        private long hitCount;
+        private long respondCount;
+
+        public synchronized void countHit() {
+            ++this.hitCount;
+        }
+
+        public synchronized void countRespond() {
+            ++this.respondCount;
+        }
+
+        public long getHitCount() {
+            return this.hitCount;
+        }
+        public long getRespondCount() {
+            return this.respondCount;
+        }
+
+        @Override
+        public String toString() {
+            return "ProviderStat{" +
+                    "hitCount=" + hitCount +
+                    ", respondCount=" + respondCount +
+                    '}';
+        }
+    }
+
 
 }

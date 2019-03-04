@@ -47,7 +47,7 @@ public class WriteTask extends Thread implements Runnable{
             try {
                 String line = Main.OUTPUT_QUEUE.take();
                 log.info("输出日志 : " + line);
-                outputStream.write(line.getBytes());
+                outputStream.write(line.getBytes("UTF-8"));
             } catch (Exception e) {
                 Thread.currentThread().interrupt();
             }
