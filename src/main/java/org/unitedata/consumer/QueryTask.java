@@ -33,16 +33,16 @@ public class QueryTask implements Runnable{
                         in.getMd5Code(), in.getVerifyMd5Code(), false, in.getRequestedFactor());
                 log.info("剩余"+Main.INPUT_QUEUE.size()+"条记录待查询。");
                 Boolean hit = false;
-                StringBuilder sb = new StringBuilder('[');
+                StringBuilder sb = new StringBuilder("[");
                 for (CreditDataProducer p : ret) {
                     boolean pHit = null != p.getMatchedKey();
                     if (pHit)
                         hit = true;
                     sb.append("(").append(p.getAccount()).append(':').append(pHit).append(')');
-                    Main.countProviderStat(p.getAccount(), pHit);
+//                    Main.countProviderStat(p.getAccount(), pHit);
                 }
                 sb.append(']');
-                if (hit) Main.countHit();
+//                if (hit) Main.countHit();
                 sb.insert(0, hit + ",");
                 if (ret.length > 0)
                     Main.OUTPUT_QUEUE.put(new Main.Out(in, sb.toString()).toString());

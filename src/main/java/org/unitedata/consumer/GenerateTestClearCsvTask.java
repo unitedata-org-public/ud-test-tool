@@ -1,7 +1,10 @@
 package org.unitedata.consumer;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.unitedata.data.consumer.data.SimpleDataContractStream;
 import org.unitedata.utils.DateUtils;
 import org.unitedata.utils.JsonUtils;
 
@@ -11,6 +14,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -69,21 +75,40 @@ public class GenerateTestClearCsvTask extends Thread implements Runnable{
         try {
             sb.append(name + UUID.randomUUID().toString()).append(',')
                     .append(HideUtils.getRandomID()).append(',')
-                    .append(JsonUtils.toString(new Overdue())).append('\n');
+                    .append(JsonUtils.toString(new Overdue(System.currentTimeMillis()))).append('\n');
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
         return sb.toString();
     }
+    static SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+    static long milliSecondsOfOneDay = 1000 * 3600 * 24;
 
-    private static class Overdue {
+    public static class Overdue {
+        String amount;
+        String type;
+        String intoTime;
+
         public Overdue() {
-            this.detail = UUID.randomUUID().toString()+"逾期信息";
         }
-        String detail;
 
-        public String getDetail() {
-            return detail;
+        public Overdue(long l) {
+            this.amount = l % 3 == 0 ? "small" : l % 3 == 1 ? "middle" : "big";
+            this.type = l % 2 == 0 ? "M2" : "M3";
+            this.intoTime = df.format(new Date(l - l % 24 * milliSecondsOfOneDay * 30));
+        }
+
+        public String getAmount() {
+            return amount;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        @JsonProperty("into_time")
+        public String getIntoTime() {
+            return intoTime;
         }
     }
 }

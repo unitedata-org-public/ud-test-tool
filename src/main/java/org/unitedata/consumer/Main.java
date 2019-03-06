@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.unitedata.data.consumer.DataQueryClient;
 import org.unitedata.data.consumer.DataQueryProtocol;
 import org.unitedata.utils.DateUtils;
+import org.unitedata.utils.JsonUtils;
 import org.unitedata.utils.ProduceHashUtil;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
@@ -18,7 +19,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -108,7 +108,17 @@ public class Main implements Runnable{
                                 }
                                 return split;
                             } else {
-                                String base64Str = Base64.getEncoder().encodeToString(l.substring(first, last + 1).getBytes(Charset.forName("UTF-8")));
+                                String detail = l.substring(first, last + 1);
+                                try {
+                                    GenerateTestClearCsvTask.Overdue overdue = JsonUtils.toObject(detail, GenerateTestClearCsvTask.Overdue.class);
+//                                    if (null == overdue || null == overdue.getAmount() || null == overdue.getIntoTime() || null == overdue.getType()) {
+//                                        throw new RuntimeException("逾期信息json格式错误。 -> " + detail);
+//                                    }
+                                } catch (IOException e) {
+                                    log.error("逾期信息json格式错误。 -> " + detail);
+                                    throw new RuntimeException(e);
+                                }
+                                String base64Str = Base64.getEncoder().encodeToString(detail.getBytes(Charset.forName("UTF-8")));
                                 String[] split = l.substring(0, first).split(",");
                                 String[] arr = new String[split.length + 1];
                                 arr[arr.length - 1] = base64Str;
@@ -214,15 +224,14 @@ public class Main implements Runnable{
         }
 
         // 打印统计信息
-        if (!(generateUploadCsv || generateQueryCsv || generateTestCsv)) {
+        /*if (!(generateUploadCsv || generateQueryCsv || generateTestCsv)) {
             System.out.println("一共查询" + size + "条记录：");
             System.out.println("总命中次数为： " + totalHit + "。");
             // 打印统计信息
             for (Map.Entry<String, ProviderStat> it : queryProviderStats.entrySet()) {
                 System.out.println(String.format("提供方账号名：%s，响应次数：%8d，命中次数：%8d", it.getKey(), it.getValue().getRespondCount(), it.getValue().getHitCount()));
             }
-        }
-
+        }*/
     }
 
     private String generateQueryCsvLine(String[] params) {
@@ -321,7 +330,7 @@ public class Main implements Runnable{
     private static enum Stage {
         TEST("http://ud-message.unitedata.k2.test.wacai.info/ud-message",
                 "http://ud-wallet-test.ud-wallet.k2.test.wacai.info/ud-wallet/v1",
-                "http://eos-test-api-v141.ud-eos-api.k2.test.wacai.info/v1",
+                "http://172.16.49.88:8888/v1",
                 "http://message-proxy-server.unitedata-service-2c-api.k2.test.wacai.info/api/rpc"),
         PROD("https://www.unitedata.link/ud-message",
                 "https://www.unitedata.link/wallet/wallet-proxy/ud-wallet/v1",
@@ -345,6 +354,7 @@ public class Main implements Runnable{
         }
     }
 
+/*
     private static final Map<String, ProviderStat> queryProviderStats = new ConcurrentHashMap<String, ProviderStat>();
 
     private static long totalHit = 0;
@@ -394,6 +404,6 @@ public class Main implements Runnable{
                     '}';
         }
     }
-
+*/
 
 }
