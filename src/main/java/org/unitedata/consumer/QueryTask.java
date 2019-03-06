@@ -44,22 +44,24 @@ public class QueryTask implements Runnable{
                 sb.append(']');
 //                if (hit) Main.countHit();
                 sb.insert(0, hit + ",");
-                if (ret.length > 0)
-                    Main.OUTPUT_QUEUE.put(new Main.Out(in, sb.toString()).toString());
+
+                Main.OUTPUT_QUEUE.put(new Main.Out(in, sb.toString()).toString());
+
                 if (Main.INPUT_QUEUE.size() == 0) {
                     this.finished = true;
                     log.info("结束查询");
                 }
             } catch (Exception e) {
-                if (null != in) {
-                    try {
+                try {
+                    if (null != in) {
                         Main.OUTPUT_QUEUE.put(new Main.Out(in, "error").toString());
-                    } catch (InterruptedException e1) {
+                    }
+                    Main.OUTPUT_QUEUE.put("本条记录异常");
+                } catch (InterruptedException e1) {
                         Thread.currentThread().interrupt();
                     }
                 }
             }
         }
 
-    }
 }
