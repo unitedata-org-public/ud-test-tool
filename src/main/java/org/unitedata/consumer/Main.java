@@ -224,14 +224,14 @@ public class Main implements Runnable{
         }
 
         // 打印统计信息
-        /*if (!(generateUploadCsv || generateQueryCsv || generateTestCsv)) {
+        if (!(generateUploadCsv || generateQueryCsv || generateTestCsv)) {
             System.out.println("一共查询" + size + "条记录：");
             System.out.println("总命中次数为： " + totalHit + "。");
             // 打印统计信息
             for (Map.Entry<String, ProviderStat> it : queryProviderStats.entrySet()) {
                 System.out.println(String.format("提供方账号名：%s，响应次数：%8d，命中次数：%8d", it.getKey(), it.getValue().getRespondCount(), it.getValue().getHitCount()));
             }
-        }*/
+        }
     }
 
     private String generateQueryCsvLine(String[] params) {
@@ -354,7 +354,7 @@ public class Main implements Runnable{
         }
     }
 
-/*
+
     private static final Map<String, ProviderStat> queryProviderStats = new ConcurrentHashMap<String, ProviderStat>();
 
     private static long totalHit = 0;
@@ -404,6 +404,6 @@ public class Main implements Runnable{
                     '}';
         }
     }
-*/
+
 
 }

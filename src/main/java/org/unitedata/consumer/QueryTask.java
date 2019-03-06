@@ -39,10 +39,10 @@ public class QueryTask implements Runnable{
                     if (pHit)
                         hit = true;
                     sb.append("(").append(p.getAccount()).append(':').append(pHit).append(')');
-//                    Main.countProviderStat(p.getAccount(), pHit);
+                    Main.countProviderStat(p.getAccount(), pHit);
                 }
                 sb.append(']');
-//                if (hit) Main.countHit();
+                if (hit) Main.countHit();
                 sb.insert(0, hit + ",");
 
                 Main.OUTPUT_QUEUE.put(new Main.Out(in, sb.toString()).toString());
