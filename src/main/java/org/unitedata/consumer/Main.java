@@ -30,7 +30,7 @@ import java.util.concurrent.LinkedBlockingDeque;
  * @author: hushi
  * @create: 2018/12/17
  */
-@Command(name = "simple-test-tool", mixinStandardHelpOptions = true, version = "v0.1",
+@Command(name = "simple-test-tool", mixinStandardHelpOptions = true, version = "v0.2.0",
         helpCommand = true, showDefaultValues = true)
 @Slf4j
 public class Main implements Runnable{
@@ -77,7 +77,42 @@ public class Main implements Runnable{
     public static final BlockingQueue<In> INPUT_QUEUE = new LinkedBlockingDeque<>();
     public static final BlockingQueue<String> OUTPUT_QUEUE = new LinkedBlockingDeque<>();
 
+    /**
+     * 这个工具目前的所有任务可以分成下面几个步骤
+     *
+     * 1. 读取命令行输入，确定一个执行模式，确定读入文件加工任务策略、执行任务策略。
+     * 2. 读入输入文件数据
+     * 3. 处理读入数据，丢到任务池中待处理
+     * 4. 消费者启动，获取任务，执行任务，拿到结果，放入输出队列
+     * 5. 写文件任务从输出队列获取并写任务
+     * 需要一个简单的调度方法，或者一个统一的结束标志，通知程序结束
+     * 目前两个队列，一个任务队列，一个输出队列；
+     *
+     * ## 这两种任务需要有个周期的管理，什么时候启动，什么时候结束，主要是什么时候结束。
+     * 当前结束是由一个字段控制
+     *
+     * 关于任务队列：不同类别的任务可能需要的输入都不同：
+     *      a. 查询需要加密的二要素
+     *      b. 加密需要二要素
+     *      c. 生成上传的密文需要三列字段
+     *      ...
+     *      上述那些可以被认为是任务执行的输入。
+     *      加工输入文件的单行数据
+     *      任务的执行：获取输入，执行任务，获得输出，放到输出队列
+     *      任务是有状态还是无状态的？
+     *      多线程执行同一类任务，需要创建很多对象么？创建吧
+     * 另外想到，这个任务队列的泛型改怎么写，BlockQueue<TaskIn>
+     * 任务的调度可以由Main来负责
+     *
+     * 各任务分工明确：不要互相影响，统一进行管理，
+     *
+     * 负责调度的任务的人知道如何结束任务，这里面就是指的这个manager
+     *
+     *
+     */
     public void run() {
+        //
+
         if (!(generateUploadCsv || generateQueryCsv || generateTestCsv)) {
             if (account == null || privateKey == null) {
                 log.error("账户名或私钥未设置！");
