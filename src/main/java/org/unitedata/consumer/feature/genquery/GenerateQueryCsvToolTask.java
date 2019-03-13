@@ -1,15 +1,14 @@
-package org.unitedata.consumer;
+package org.unitedata.consumer.feature.genquery;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.unitedata.consumer.AbstractToolTask;
+import org.unitedata.consumer.Main;
+import org.unitedata.consumer.TaskToolException;
 import org.unitedata.utils.DateUtils;
-import org.unitedata.utils.JsonUtils;
 import org.unitedata.utils.ProduceHashUtil;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -31,7 +30,8 @@ public class GenerateQueryCsvToolTask extends AbstractToolTask<String, String> {
     @Override
     protected void preRun() {
         try {
-            Main.OUTPUT_QUEUE.put("逾期信息,静态随机数,二要素md5,基础数据md5,二要素凭证\n");
+            Main.INPUT_FILE_LINES.take();
+            Main.OUTPUT_QUEUE.put("二要素md5,基础数据md5,动态随机数\n");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -39,7 +39,7 @@ public class GenerateQueryCsvToolTask extends AbstractToolTask<String, String> {
     }
 
     @Override
-    String doRun(String s) throws TaskToolException {
+    public String process(String s) throws TaskToolException {
         s = s.replace("\uFEFF", "");
         return generateQueryCsvLine(s.trim().split(","));
 

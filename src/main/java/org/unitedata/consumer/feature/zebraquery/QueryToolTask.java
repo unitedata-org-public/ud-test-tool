@@ -1,6 +1,9 @@
-package org.unitedata.consumer;
+package org.unitedata.consumer.feature.zebraquery;
 
 import lombok.extern.slf4j.Slf4j;
+import org.unitedata.consumer.AbstractToolTask;
+import org.unitedata.consumer.Main;
+import org.unitedata.consumer.TaskToolException;
 import org.unitedata.consumer.model.QueryIn;
 import org.unitedata.consumer.model.QueryOut;
 import org.unitedata.data.consumer.DataQueryClient;
@@ -35,10 +38,9 @@ public class QueryToolTask extends AbstractToolTask<QueryIn, String> {
     }
 
     @Override
-    String doRun(QueryIn in) throws TaskToolException {
+    public String process(QueryIn in) throws TaskToolException {
         String result = null;
         try {
-            in = Main.INPUT_QUEUE.take();
             CreditDataProducer[] ret = (CreditDataProducer[])protocol.creditQuery(mainParam.contractId, null,
                     in.getMd5Code(), in.getVerifyMd5Code(), false, in.getRequestedFactor());
             log.info("剩余"+Main.INPUT_QUEUE.size()+"条记录待查询。");

@@ -1,7 +1,11 @@
-package org.unitedata.consumer;
+package org.unitedata.consumer.feature.genupload;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.unitedata.consumer.AbstractToolTask;
+import org.unitedata.consumer.Main;
+import org.unitedata.consumer.TaskToolException;
+import org.unitedata.consumer.model.Overdue;
 import org.unitedata.utils.DateUtils;
 import org.unitedata.utils.JsonUtils;
 import org.unitedata.utils.ProduceHashUtil;
@@ -31,6 +35,8 @@ public class GenerateUploadCsvToolTask extends AbstractToolTask<String, String> 
     @Override
     protected void preRun() {
         try {
+            // 去掉第一行
+            Main.INPUT_FILE_LINES.take();
             Main.OUTPUT_QUEUE.put("逾期信息,静态随机数,二要素md5,基础数据md5,二要素凭证\n");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -39,7 +45,7 @@ public class GenerateUploadCsvToolTask extends AbstractToolTask<String, String> 
     }
 
     @Override
-    String doRun(String s) throws TaskToolException {
+    protected String process(String s) throws TaskToolException {
         s = s.replace("\uFEFF", "");
         int first = s.indexOf('{');
         int last = s.lastIndexOf('}');
@@ -53,7 +59,7 @@ public class GenerateUploadCsvToolTask extends AbstractToolTask<String, String> 
         } else {
             String detail = s.substring(first, last + 1);
             try {
-                GenerateTestClearCsvTask.Overdue overdue = JsonUtils.toObject(detail, GenerateTestClearCsvTask.Overdue.class);
+                Overdue overdue = JsonUtils.toObject(detail, Overdue.class);
                 if (null == overdue || null == overdue.getAmount() || null == overdue.getIntoTime() || null == overdue.getType()) {
                     throw new TaskToolException("逾期信息json格式错误。 -> " + detail);
                 }

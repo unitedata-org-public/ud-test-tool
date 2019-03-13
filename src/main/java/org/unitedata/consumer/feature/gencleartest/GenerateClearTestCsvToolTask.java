@@ -1,6 +1,10 @@
-package org.unitedata.consumer;
+package org.unitedata.consumer.feature.gencleartest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.unitedata.consumer.AbstractToolTask;
+import org.unitedata.consumer.Main;
+import org.unitedata.consumer.TaskToolException;
+import org.unitedata.consumer.model.Overdue;
 import org.unitedata.consumer.util.HideUtils;
 import org.unitedata.utils.JsonUtils;
 
@@ -29,12 +33,12 @@ public class GenerateClearTestCsvToolTask extends AbstractToolTask<String, Strin
     }
 
     @Override
-    String doRun(String s) throws TaskToolException {
+    protected String process(String s) throws TaskToolException {
         StringBuilder sb = new StringBuilder();
         try {
             sb.append((null == mainParam.testName ? "" : mainParam.testName) + UUID.randomUUID().toString()).append(',')
                     .append(HideUtils.getRandomID()).append(',')
-                    .append(JsonUtils.toString(new GenerateTestClearCsvTask.Overdue(System.currentTimeMillis()))).append('\n');
+                    .append(JsonUtils.toString(new Overdue(System.currentTimeMillis()))).append('\n');
         } catch (JsonProcessingException e) {
             throw new TaskToolException(e);
         }

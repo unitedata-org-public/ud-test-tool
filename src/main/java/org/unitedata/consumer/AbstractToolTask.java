@@ -31,9 +31,9 @@ public abstract class AbstractToolTask<In, Out> implements Runnable{
             Out out = null;
             try {
                 if (null != inQueue) {
-                    out = doRun(inQueue.take());
+                    out = process(inQueue.take());
                 } else {
-                    out = doRun(null);
+                    out = process(null);
                 }
                 outQueue.put(out);
             } catch (InterruptedException e) {
@@ -47,7 +47,7 @@ public abstract class AbstractToolTask<In, Out> implements Runnable{
         postRun();
     }
 
-    abstract Out doRun(In in) throws TaskToolException;
+    protected abstract Out process(In in) throws TaskToolException;
 
     protected void finish() {
         finished = true;

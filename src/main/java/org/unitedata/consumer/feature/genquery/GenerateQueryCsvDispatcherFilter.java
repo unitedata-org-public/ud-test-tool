@@ -1,10 +1,17 @@
-package org.unitedata.consumer;
+package org.unitedata.consumer.feature.genquery;
+
+import org.unitedata.consumer.DispatcherFilter;
+import org.unitedata.consumer.Main;
+import org.unitedata.consumer.Pipeline;
+import org.unitedata.consumer.PipelineEndNode;
+import org.unitedata.consumer.PipelineNode;
+import org.unitedata.consumer.PipelineStartNode;
 
 /**
  * @author: hushi
  * @create: 2019/03/13
  */
-public class GenerateQueryCsvDispatcherFilter implements DispatcherFilter{
+public class GenerateQueryCsvDispatcherFilter implements DispatcherFilter {
     private Main mainParam;
     public GenerateQueryCsvDispatcherFilter(Main mainParam) {
         if (mainParam == null) {
@@ -22,7 +29,7 @@ public class GenerateQueryCsvDispatcherFilter implements DispatcherFilter{
     public Pipeline build() {
         Pipeline pipeline = new Pipeline();
         pipeline.startNode(new PipelineStartNode(s -> s != null && s.length() > 0, mainParam))
-                .addPipelineNode(new PipelineNode(new GenerateUploadCsvToolTask()))
+                .addPipelineNode(new PipelineNode(new GenerateQueryCsvToolTask()))
                 .endNode(new PipelineEndNode(mainParam));
         return pipeline;
     }

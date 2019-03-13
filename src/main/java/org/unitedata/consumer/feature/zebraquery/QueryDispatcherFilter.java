@@ -1,4 +1,11 @@
-package org.unitedata.consumer;
+package org.unitedata.consumer.feature.zebraquery;
+
+import org.unitedata.consumer.DispatcherFilter;
+import org.unitedata.consumer.Main;
+import org.unitedata.consumer.Pipeline;
+import org.unitedata.consumer.PipelineEndNode;
+import org.unitedata.consumer.PipelineNode;
+import org.unitedata.consumer.PipelineStartNode;
 
 /**
  * @author: hushi

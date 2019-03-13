@@ -1,6 +1,10 @@
 package org.unitedata.consumer;
 
 import lombok.extern.slf4j.Slf4j;
+import org.unitedata.consumer.feature.gencleartest.GenerateClearTestCsvDispatcherFilter;
+import org.unitedata.consumer.feature.genquery.GenerateQueryCsvDispatcherFilter;
+import org.unitedata.consumer.feature.genupload.GenerateUploadCsvDispatcherFilter;
+import org.unitedata.consumer.feature.zebraquery.QueryDispatcherFilter;
 import org.unitedata.consumer.model.QueryIn;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
@@ -66,193 +70,16 @@ public class Main implements Runnable{
     public static final BlockingQueue<String> INPUT_FILE_LINES = new LinkedBlockingDeque<>();
 
 
-    /**
-     * 这个工具目前的所有任务可以分成下面几个步骤
-     *
-     * 1. 读取命令行输入，确定一个执行模式，确定读入文件加工任务策略、执行任务策略。
-     * 2. 读入输入文件数据
-     * 3. 处理读入数据，丢到任务池中待处理
-     * 4. 消费者启动，获取任务，执行任务，拿到结果，放入输出队列
-     * 5. 写文件任务从输出队列获取并写任务
-     * 需要一个简单的调度方法，或者一个统一的结束标志，通知程序结束
-     * 目前两个队列，一个任务队列，一个输出队列；
-     *
-     * ## 这两种任务需要有个周期的管理，什么时候启动，什么时候结束，主要是什么时候结束。
-     * 当前结束是由一个字段控制
-     *
-     * 关于任务队列：不同类别的任务可能需要的输入都不同：
-     *      a. 查询需要加密的二要素
-     *      b. 加密需要二要素
-     *      c. 生成上传的密文需要三列字段
-     *      ...
-     *      上述那些可以被认为是任务执行的输入。
-     *      加工输入文件的单行数据
-     *      任务的执行：获取输入，执行任务，获得输出，放到输出队列
-     *      任务是有状态还是无状态的？
-     *      多线程执行同一类任务，需要创建很多对象么？创建吧
-     * 另外想到，这个任务队列的泛型改怎么写，BlockQueue<TaskIn>
-     * 任务的调度可以由Main来负责
-     *
-     * 各任务分工明确：不要互相影响，统一进行管理，
-     *
-     * 负责调度的任务的人知道如何结束任务，这里面就是指的这个manager
-     *
-     *
-     */
     public void run() {
-        //
+
         ToolTaskDispatcher dispatcher = new ToolTaskDispatcher();
         dispatcher.register(new GenerateUploadCsvDispatcherFilter(this));
         dispatcher.register(new GenerateQueryCsvDispatcherFilter(this));
         dispatcher.register(new GenerateClearTestCsvDispatcherFilter(this));
         dispatcher.register(new QueryDispatcherFilter(this));
         dispatcher.dispatch();
-/*        if (!(generateUploadCsv || generateQueryCsv || generateTestCsv)) {
-            if (account == null || privateKey == null) {
-                log.error("账户名或私钥未设置！");
-                return;
-            }
-        }
 
-        long readBegin = System.currentTimeMillis();
-        if (inputFiles != null) {
-            for (File f : inputFiles) {
-                Path path = Paths.get(f.getAbsolutePath());
-                try {
-                    if (generateUploadCsv) {
-                        try {
-                            OUTPUT_QUEUE.put("逾期信息,静态随机数,二要素md5,基础数据md5,二要素凭证\n");
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                        }
-                        Files.lines(path).filter(l -> l != null && l.length() > 0).map(l -> {
-                            l = l.replace("\uFEFF", "");
-                            int first = l.indexOf('{');
-                            int last = l.lastIndexOf('}');
-                            if (last <= first) {
-                                log.warn("逾期信息json格式错误。");
-                                String[] split = l.split(",");
-                                if (split.length > 2) {
-                                    split[2] = Base64.getEncoder().encodeToString(split[2].getBytes(Charset.forName("UTF-8")));
-                                }
-                                return split;
-                            } else {
-                                String detail = l.substring(first, last + 1);
-                                try {
-                                    GenerateTestClearCsvTask.Overdue overdue = JsonUtils.toObject(detail, GenerateTestClearCsvTask.Overdue.class);
-//                                    if (null == overdue || null == overdue.getAmount() || null == overdue.getIntoTime() || null == overdue.getType()) {
-//                                        throw new RuntimeException("逾期信息json格式错误。 -> " + detail);
-//                                    }
-                                } catch (IOException e) {
-                                    log.error("逾期信息json格式错误。 -> " + detail);
-                                    throw new RuntimeException(e);
-                                }
-                                String base64Str = Base64.getEncoder().encodeToString(detail.getBytes(Charset.forName("UTF-8")));
-                                String[] split = l.substring(0, first).split(",");
-                                String[] arr = new String[split.length + 1];
-                                arr[arr.length - 1] = base64Str;
-                                for (int i = 0; i < arr.length - 1; i++) {
-                                    arr[i] = split[i];
-                                }
-                                return arr;
-
-                            }
-
-                        })
-                                .filter(params -> params.length >= 3)
-                                .forEach(params -> {
-                                    try {
-                                        OUTPUT_QUEUE.put(generateUploadCsvLine(params));
-                                    } catch (InterruptedException e) {
-                                        Thread.currentThread().interrupt();
-                                    }
-                                });
-                    } else if (generateQueryCsv) {
-                        Files.lines(path).map(l -> {
-                            l = l.replace("\uFEFF", "");
-                            return l.trim().split(",");
-                        })
-                                .filter(params -> params.length >= 2)
-                                .forEach(params -> {
-                                    try {
-                                        OUTPUT_QUEUE.put(generateQueryCsvLine(params));
-                                    } catch (InterruptedException e) {
-                                        Thread.currentThread().interrupt();
-                                    }
-                                });
-                    } else {
-                        Files.lines(path).map(l -> l.trim().split(","))
-                                .filter(params -> params.length >= 3)
-                                .forEach(params -> {
-                                    String md5Code = params[0].replace("\"","");
-                                    String verifyMd5Code = params[1].replace("\"","");
-                                    Long requestedFactor = Long.valueOf(params[2].replace("\"",""));
-                                    log.info("读入二要素信息：md5Code -> "+ md5Code + ", verifyMd5Code -> " + verifyMd5Code + ", requestedFactor -> " + requestedFactor);
-                                    try {
-                                        INPUT_QUEUE.put(new In(md5Code, verifyMd5Code, requestedFactor));
-                                    } catch (InterruptedException e) {
-                                        Thread.currentThread().interrupt();
-                                    }
-                                });
-
-
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    throw new RuntimeException(e);
-                }
-            }
-
-        }
-
-        if (generateTestCsv) {
-            if (testCsvCount < 0) {
-                log.error("输出测试条数必须为正");
-                return;
-            } else {
-                GenerateTestClearCsvTask generateTestClearCsvTask = new GenerateTestClearCsvTask(testCsvCount, testName);
-                generateTestClearCsvTask.start();
-            }
-        }
-        long readEnd = System.currentTimeMillis();
-        log.info("读取内容共耗时 -> " + (readEnd - readBegin) + "毫秒");
-        WriteTask writeTask;
-        int size = 0;
-        if (generateUploadCsv || generateQueryCsv ) {
-            size = OUTPUT_QUEUE.size();
-            log.info("读入参数"+ size + "条");
-            writeTask = new WriteTask(size, outFilePath);
-        } else if (generateTestCsv) {
-            writeTask = new WriteTask(testCsvCount, outFilePath);
-        } else {
-            size = INPUT_QUEUE.size();
-            log.info("读入参数"+ size + "条");
-            // 启动消费input
-            DataQueryProtocol protocol =
-                    DataQueryClient
-                            .newProtocol(account, privateKey,
-                                    null == tokenServiceHost ? stage.tokenServiceHost : tokenServiceHost,
-                                    null == messageServiceHost ? stage.messageServiceHost : messageServiceHost)
-                            .setContractUri(null == eosHost ? stage.eosHost : eosHost)
-                            .setRpcServiceUrl(null == rpcServiceUrl ? stage.rpcServiceUrl : rpcServiceUrl);
-            ExecutorService executorService = Executors.newFixedThreadPool(threads);
-            for (int i = 0; i < threads ; i++) {
-                executorService.execute(new QueryTask(protocol, contractId));
-            }
-            writeTask = new WriteTask(size, outFilePath);
-        }
-        writeTask.start();
-
-        while (!WriteTask.isFinished()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-
-        // 打印统计信息
+        /*// 打印统计信息
         if (!(generateUploadCsv || generateQueryCsv || generateTestCsv)) {
             System.out.println("一共查询" + getStartNode + "条记录：");
             System.out.println("总命中次数为： " + totalHit + "。");
