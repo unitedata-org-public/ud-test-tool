@@ -3,7 +3,6 @@ package org.unitedata.consumer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * @author: hushi
@@ -16,6 +15,9 @@ public abstract class AbstractToolTask<In, Out> implements Runnable{
     private BlockingQueue<Out> outQueue;
 
     public AbstractToolTask(BlockingQueue<In> inQueue, BlockingQueue<Out> outQueue) {
+        if (null == outQueue) {
+            throw new IllegalArgumentException("outQueue不能为空！");
+        }
         this.inQueue = inQueue;
         this.outQueue = outQueue;
     }
@@ -28,7 +30,11 @@ public abstract class AbstractToolTask<In, Out> implements Runnable{
         while (!isFinished()) {
             Out out = null;
             try {
-                out = doRun(inQueue.take());
+                if (null != inQueue) {
+                    out = doRun(inQueue.take());
+                } else {
+                    out = doRun(null);
+                }
                 outQueue.put(out);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -57,6 +63,4 @@ public abstract class AbstractToolTask<In, Out> implements Runnable{
         return finished;
     }
 
-    private static class TaskToolException extends Exception {
-    }
 }

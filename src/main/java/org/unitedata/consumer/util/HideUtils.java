@@ -1,4 +1,4 @@
-package org.unitedata.consumer;
+package org.unitedata.consumer.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

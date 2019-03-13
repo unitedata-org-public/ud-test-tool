@@ -6,7 +6,9 @@ package org.unitedata.consumer;
  */
 public interface DispatcherFilter {
 
-    boolean isMatch(Main main);
+    boolean isMatch();
 
     Pipeline build();
+
+    void validate();
 }

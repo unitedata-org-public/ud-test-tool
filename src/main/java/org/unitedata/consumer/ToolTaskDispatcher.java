@@ -1,6 +1,6 @@
 package org.unitedata.consumer;
 
-import java.util.Queue;
+import java.util.LinkedList;
 
 /**
  * @author: hushi
@@ -8,25 +8,25 @@ import java.util.Queue;
  */
 public class ToolTaskDispatcher {
 
-    private Queue<DispatcherFilter> filters;
-    private Main mainParam;
+    private LinkedList<DispatcherFilter> filters = new LinkedList<>();
 
-    public ToolTaskDispatcher(Main main) {
-        this.mainParam = main;
+    public ToolTaskDispatcher() {
     }
 
-    void register(DispatcherFilter filter, int order) {
+    void register(DispatcherFilter filter) {
         filters.add(filter);
     }
 
     /**
-     * 分发任务
+     * 分发执行任务
      */
     void dispatch() {
+        filters.addLast(new VoidDispatcherFilter());
         for (DispatcherFilter f: filters) {
-            if (f.isMatch(mainParam)) {
+            if (f.isMatch()) {
+                f.validate();
                 Pipeline pipeline = f.build();
-                pipeline.start();
+                pipeline.work();
                 return;
             }
         }

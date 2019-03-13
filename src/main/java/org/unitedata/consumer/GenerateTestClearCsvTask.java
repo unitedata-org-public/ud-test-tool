@@ -2,19 +2,10 @@ package org.unitedata.consumer;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.unitedata.data.consumer.data.SimpleDataContractStream;
-import org.unitedata.utils.DateUtils;
+import org.unitedata.consumer.util.HideUtils;
 import org.unitedata.utils.JsonUtils;
 
-import javax.xml.ws.Response;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
@@ -46,8 +37,6 @@ public class GenerateTestClearCsvTask extends Thread implements Runnable{
         } else {
             this.name = "";
         }
-
-
 
     }
 

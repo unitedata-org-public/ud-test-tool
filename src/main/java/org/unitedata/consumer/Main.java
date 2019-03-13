@@ -1,29 +1,16 @@
 package org.unitedata.consumer;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.unitedata.data.consumer.DataQueryClient;
-import org.unitedata.data.consumer.DataQueryProtocol;
-import org.unitedata.utils.DateUtils;
-import org.unitedata.utils.JsonUtils;
-import org.unitedata.utils.ProduceHashUtil;
+import org.unitedata.consumer.model.QueryIn;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 
 /**
@@ -74,9 +61,8 @@ public class Main implements Runnable{
     @Option(names = {"-gtn","--generate-test-name"}, description = "生成用明文测试数据name")
     public String testName;
 
-    public static final BlockingQueue<In> INPUT_QUEUE = new LinkedBlockingDeque<>();
+    public static final BlockingQueue<QueryIn> INPUT_QUEUE = new LinkedBlockingDeque<>();
     public static final BlockingQueue<String> OUTPUT_QUEUE = new LinkedBlockingDeque<>();
-
     public static final BlockingQueue<String> INPUT_FILE_LINES = new LinkedBlockingDeque<>();
 
 
@@ -115,9 +101,13 @@ public class Main implements Runnable{
      */
     public void run() {
         //
-        ToolTaskDispatcher dispatcher = new ToolTaskDispatcher(this);
+        ToolTaskDispatcher dispatcher = new ToolTaskDispatcher();
+        dispatcher.register(new GenerateUploadCsvDispatcherFilter(this));
+        dispatcher.register(new GenerateQueryCsvDispatcherFilter(this));
+        dispatcher.register(new GenerateClearTestCsvDispatcherFilter(this));
+        dispatcher.register(new QueryDispatcherFilter(this));
         dispatcher.dispatch();
-        if (!(generateUploadCsv || generateQueryCsv || generateTestCsv)) {
+/*        if (!(generateUploadCsv || generateQueryCsv || generateTestCsv)) {
             if (account == null || privateKey == null) {
                 log.error("账户名或私钥未设置！");
                 return;
@@ -264,53 +254,15 @@ public class Main implements Runnable{
 
         // 打印统计信息
         if (!(generateUploadCsv || generateQueryCsv || generateTestCsv)) {
-            System.out.println("一共查询" + size + "条记录：");
+            System.out.println("一共查询" + getStartNode + "条记录：");
             System.out.println("总命中次数为： " + totalHit + "。");
             // 打印统计信息
             for (Map.Entry<String, ProviderStat> it : queryProviderStats.entrySet()) {
                 System.out.println(String.format("提供方账号名：%s，响应次数：%8d，命中次数：%8d", it.getKey(), it.getValue().getRespondCount(), it.getValue().getHitCount()));
             }
-        }
+        }*/
     }
 
-    private String generateQueryCsvLine(String[] params) {
-        StringBuffer stringBuffer = new StringBuffer();
-        try {
-            String twoHash = ProduceHashUtil.twoHash(params[0], params[1]);
-            String random = String.valueOf(DateUtils.unixNano());
-            stringBuffer
-                    .append(twoHash).append(',')
-                    .append(ProduceHashUtil.randomHash(twoHash, random )).append(',')
-                    .append(random)
-                    .append('\n');
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            return stringBuffer.toString();
-        }
-    }
-
-    private String generateUploadCsvLine(String[] params) {
-        StringBuffer stringBuffer = new StringBuffer();
-        try {
-            String twoHash = ProduceHashUtil.twoHash(params[0], params[1]);
-            String random = String.valueOf(DateUtils.unixNano());
-//            String timestamp = String.valueOf(System.currentTimeMillis());
-            stringBuffer
-                    .append(params[2]).append(',')
-//                    .append(timestamp).append(',')
-                    .append(random).append(',')
-                    .append(twoHash).append(',')
-                    .append(ProduceHashUtil.randomHash(twoHash, params[2])).append(',')
-                    .append(ProduceHashUtil.randomHash(twoHash, random))
-//                    .append(ProduceHashUtil.privacyHash(twoHash, params[2],timestamp,random))
-                    .append('\n');
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            return stringBuffer.toString();
-        }
-    }
 
     public static void main(String[] args) {
         CommandLine cmd = new CommandLine(new Main());
@@ -321,50 +273,6 @@ public class Main implements Runnable{
 
     }
 
-    @Data
-    public static class In {
-        String md5Code;
-        String verifyMd5Code;
-        Long requestedFactor;
-
-
-        public In() {
-        }
-
-        public In(String md5Code, String verifyMd5Code, Long requestedFactor) {
-            this.md5Code = md5Code;
-            this.verifyMd5Code = verifyMd5Code;
-            this.requestedFactor = requestedFactor;
-        }
-    }
-
-    @Data
-    public static class Out {
-        String md5Code;
-        String verifyMd5Code;
-        Long requestedFactor;
-        String ret;
-
-        public Out() {
-        }
-
-        public Out(In in, String ret) {
-            this.md5Code = in.md5Code;
-            this.verifyMd5Code = in.verifyMd5Code;
-            this.requestedFactor = in.requestedFactor;
-            this.ret = ret;
-        }
-
-        @Override
-        public String toString() {
-            StringBuffer stringBuffer = new StringBuffer();
-            stringBuffer.append(md5Code).append(',')
-                    .append(verifyMd5Code).append(',')
-                    .append(requestedFactor).append(',')
-                    .append(ret).append('\n');
-            return stringBuffer.toString();
-        }
-    }
 
     public static enum Stage {
         TEST("http://ud-message.unitedata.k2.test.wacai.info/ud-message",
@@ -380,10 +288,10 @@ public class Main implements Runnable{
                 "https://preview.unitedata.link/v1",
                 "https://preview.unitedata.link/ud-proxy/api/rpc");
 
-        private String messageServiceHost;
-        private String tokenServiceHost;
-        private String eosHost;
-        private String rpcServiceUrl;
+        public String messageServiceHost;
+        public String tokenServiceHost;
+        public String eosHost;
+        public String rpcServiceUrl;
 
         Stage(String messageServiceHost, String tokenServiceHost, String eosHost, String rpcServiceUrl) {
             this.messageServiceHost = messageServiceHost;
