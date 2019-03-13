@@ -1,49 +1,62 @@
 package org.unitedata.consumer;
 
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+
 /**
  * @author: hushi
  * @create: 2019/03/07
  */
-public abstract class AbstractToolTask implements Runnable{
+@Slf4j
+public abstract class AbstractToolTask<In, Out> implements Runnable{
 
-    /**
-     * 如果有这样一个标志字段，就是有状态了。
-     * 不同的线程不共享。
-     */
-    private boolean finished;
+    private BlockingQueue<In> inQueue;
+    private BlockingQueue<Out> outQueue;
 
-    private String name;
+    public AbstractToolTask(BlockingQueue<In> inQueue, BlockingQueue<Out> outQueue) {
+        this.inQueue = inQueue;
+        this.outQueue = outQueue;
+    }
+
+    private static boolean finished;
 
     @Override
     public void run() {
         preRun();
         while (!isFinished()) {
-            doRun();
+            Out out = null;
+            try {
+                out = doRun(inQueue.take());
+                outQueue.put(out);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (TaskToolException e) {
+                log.error(e.getMessage());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
         postRun();
     }
 
-    abstract void doRun();
+    abstract Out doRun(In in) throws TaskToolException;
 
     protected void finish() {
-        this.finished = true;
+        finished = true;
     }
 
     protected void postRun(){
     }
 
     protected void preRun() {
-//        if (null != taskName() && taskName().length() > 0 && ) {
-//
-//        }
-//        Thread.currentThread().setName(taskName());
     }
-
 
     public boolean isFinished() {
         return finished;
     }
-    public String taskName() {
-        return name;
+
+    private static class TaskToolException extends Exception {
     }
 }

@@ -36,46 +36,49 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class Main implements Runnable{
 
     @Option(names = {"-a","--account"}, description = "需求方账号名")
-    private String account;
+    public String account;
     @Option(names = {"-p","--private-key"}, description = "需求方账号对应私钥")
-    private String privateKey;
+    public String privateKey;
     @Option(names = {"-d","--data-contract"}, defaultValue = "ud.blacklist", description = "黑名单合约的地址")
-    private String contractId = "ud.blacklist";
+    public String contractId = "ud.blacklist";
 
     @Parameters(arity = "0..*", paramLabel = "FILE", description = "输入文件地址")
-    private File[] inputFiles;
+    public File[] inputFiles;
 
     @Option(names = {"-s","--stage"}, type = Stage.class, defaultValue = "TEST",
             description = "选择环境，有效的参数如下: ${COMPLETION-CANDIDATES}" )
-    private Stage stage;
+    public Stage stage;
 
     @Option(names = {"-t","--threads"}, description = "查询的线程数", defaultValue = "1")
-    private int threads = 1;
+    public int threads = 1;
 
     @Option(names = {"-o","--output-file-path"}, description = "输出结果文件", defaultValue = "out.csv")
-    private String outFilePath;
+    public String outFilePath;
 
     @Option(names = {"--message-service-host"}, description = "消息服务地址。")
-    private String messageServiceHost;
+    public String messageServiceHost;
     @Option(names = {"--token-service-host"}, description = "获取用户登录token服务器地址")
-    private String tokenServiceHost;
+    public String tokenServiceHost;
     @Option(names = {"--eos-api-host"}, description = "数链eosAPI节点地址")
-    private String eosHost;
+    public String eosHost;
     @Option(names = {"--rpc-service-url"}, description = "代理服务器地址")
-    private String rpcServiceUrl;
+    public String rpcServiceUrl;
     @Option(names = {"-gu","--generate-upload-csv"}, description = "不进行查询，读取明文csv，并创建密文参数csv供eds上传")
-    private boolean generateUploadCsv = false;
+    public boolean generateUploadCsv = false;
     @Option(names = {"-gq","--generate-query-csv"}, description = "不进行查询，读取明文csv，并创建密文查询参数csv")
-    private boolean generateQueryCsv = false;
+    public boolean generateQueryCsv = false;
     @Option(names = {"-gt","--generate-test-csv"}, description = "不进行查询，生成测试用明文数据csv")
-    private boolean generateTestCsv = false;
+    public boolean generateTestCsv = false;
     @Option(names = {"-gtc","--generate-test-count"}, type = Integer.class, defaultValue = "60000", description = "生成测试用明文数据条数")
-    private int testCsvCount;
+    public int testCsvCount;
     @Option(names = {"-gtn","--generate-test-name"}, description = "生成用明文测试数据name")
-    private String testName;
+    public String testName;
 
     public static final BlockingQueue<In> INPUT_QUEUE = new LinkedBlockingDeque<>();
     public static final BlockingQueue<String> OUTPUT_QUEUE = new LinkedBlockingDeque<>();
+
+    public static final BlockingQueue<String> INPUT_FILE_LINES = new LinkedBlockingDeque<>();
+
 
     /**
      * 这个工具目前的所有任务可以分成下面几个步骤
@@ -112,7 +115,8 @@ public class Main implements Runnable{
      */
     public void run() {
         //
-
+        ToolTaskDispatcher dispatcher = new ToolTaskDispatcher(this);
+        dispatcher.dispatch();
         if (!(generateUploadCsv || generateQueryCsv || generateTestCsv)) {
             if (account == null || privateKey == null) {
                 log.error("账户名或私钥未设置！");
@@ -362,7 +366,7 @@ public class Main implements Runnable{
         }
     }
 
-    private static enum Stage {
+    public static enum Stage {
         TEST("http://ud-message.unitedata.k2.test.wacai.info/ud-message",
                 "http://ud-wallet-test.ud-wallet.k2.test.wacai.info/ud-wallet/v1",
                 "http://172.16.49.88:8888/v1",
