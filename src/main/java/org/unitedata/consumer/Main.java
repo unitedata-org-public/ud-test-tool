@@ -2,9 +2,11 @@ package org.unitedata.consumer;
 
 import lombok.extern.slf4j.Slf4j;
 import org.unitedata.consumer.feature.gencleartest.GenerateClearTestCsvDispatcherFilter;
+import org.unitedata.consumer.feature.gendoupload.GenerateAndDoUploadCsvDispatcherFilter;
 import org.unitedata.consumer.feature.genquery.GenerateQueryCsvDispatcherFilter;
 import org.unitedata.consumer.feature.genupload.GenerateUploadCsvDispatcherFilter;
 import org.unitedata.consumer.feature.zebraquery.QueryDispatcherFilter;
+import org.unitedata.consumer.model.ProofData;
 import org.unitedata.consumer.model.QueryIn;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
@@ -64,16 +66,21 @@ public class Main implements Runnable{
     public int testCsvCount;
     @Option(names = {"-gtn","--generate-test-name"}, description = "生成用明文测试数据name")
     public String testName;
+    @Option(names = {"-gtu","--generate-csv-and-upload"}, description = "不进行查询，读取明文csv，并创建密文参数csv并直接上传")
+    public boolean generateAndUpload;
+
 
     public static final BlockingQueue<QueryIn> INPUT_QUEUE = new LinkedBlockingDeque<>();
     public static final BlockingQueue<String> OUTPUT_QUEUE = new LinkedBlockingDeque<>();
     public static final BlockingQueue<String> INPUT_FILE_LINES = new LinkedBlockingDeque<>();
+    public static final BlockingQueue<ProofData> PROOF_DATA_BLOCKING_QUEUE = new LinkedBlockingDeque<>();
 
 
     public void run() {
 
         ToolTaskDispatcher dispatcher = new ToolTaskDispatcher();
         dispatcher.register(new GenerateUploadCsvDispatcherFilter(this));
+        dispatcher.register(new GenerateAndDoUploadCsvDispatcherFilter(this));
         dispatcher.register(new GenerateQueryCsvDispatcherFilter(this));
         dispatcher.register(new GenerateClearTestCsvDispatcherFilter(this));
         dispatcher.register(new QueryDispatcherFilter(this));
