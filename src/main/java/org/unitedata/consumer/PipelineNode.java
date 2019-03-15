@@ -12,13 +12,13 @@ public class PipelineNode {
 
     private int workerNum = 1;
     private ExecutorService executorService;
-    private AbstractToolTask nodeTask;
+    private ToolTask nodeTask;
 
-    public PipelineNode(AbstractToolTask nodeTask) {
+    public PipelineNode(ToolTask nodeTask) {
         this(nodeTask, 1);
     }
 
-    public PipelineNode(AbstractToolTask nodeTask, int workerNum) {
+    public PipelineNode(ToolTask nodeTask, int workerNum) {
         this.workerNum = workerNum;
         this.nodeTask = nodeTask;
         executorService = Executors.newFixedThreadPool(workerNum);

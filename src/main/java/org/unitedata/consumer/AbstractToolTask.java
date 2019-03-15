@@ -9,7 +9,7 @@ import java.util.concurrent.BlockingQueue;
  * @create: 2019/03/07
  */
 @Slf4j
-public abstract class AbstractToolTask<In, Out> implements Runnable{
+public abstract class AbstractToolTask<In, Out> implements ToolTask{
 
     private BlockingQueue<In> inQueue;
     private BlockingQueue<Out> outQueue;
@@ -27,29 +27,31 @@ public abstract class AbstractToolTask<In, Out> implements Runnable{
     @Override
     public void run() {
         preRun();
-        while (!isFinished()) {
-            Out out = null;
-            try {
+        try {
+            while (!isFinished()) {
+                Out out = null;
                 if (null != inQueue) {
                     out = process(inQueue.take());
                 } else {
                     out = process(null);
                 }
                 outQueue.put(out);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } catch (TaskToolException e) {
-                log.error(e.getMessage());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (TaskToolException e) {
+            log.error(e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            postRun();
         }
-        postRun();
     }
 
     protected abstract Out process(In in) throws TaskToolException;
 
-    protected void finish() {
+    public void finish() {
         finished = true;
     }
 

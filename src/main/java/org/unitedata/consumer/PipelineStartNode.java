@@ -29,6 +29,7 @@ public class PipelineStartNode {
     private Predicate<String> predicate;
 
     public void read() {
+        preRead();
         Arrays.stream(mainParam.inputFiles).forEach(f -> {
             Path path = Paths.get(f.getAbsolutePath());
             try {
@@ -44,9 +45,16 @@ public class PipelineStartNode {
                 throw new RuntimeException(e);
             }
         });
+        postRead();
     }
 
     public long getLineCount() {
         return lineCount;
+    }
+
+    protected void preRead() {
+    }
+
+    protected void postRead() {
     }
 }

@@ -14,7 +14,8 @@ import java.util.Base64;
  * 二要素明文文件格式：用户名，身份证信息，逾期信息json
  */
 @Slf4j
-public class ProofParserParser {
+public enum ProofParserParser {
+    INSTANCE;
 
     public String[] parseAsEncryped(String plainText) {
         //修正输入参数的Unicode头

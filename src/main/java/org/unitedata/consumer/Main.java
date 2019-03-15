@@ -15,6 +15,7 @@ import picocli.CommandLine.Parameters;
 
 import java.io.File;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -74,7 +75,7 @@ public class Main implements Runnable{
     public static final BlockingQueue<String> OUTPUT_QUEUE = new LinkedBlockingDeque<>();
     public static final BlockingQueue<String> INPUT_FILE_LINES = new LinkedBlockingDeque<>();
     public static final BlockingQueue<ProofData> PROOF_DATA_BLOCKING_QUEUE = new LinkedBlockingDeque<>();
-
+    public static final String INPUT_QUEUE_END_MARKER = UUID.randomUUID().toString();
 
     public void run() {
 
