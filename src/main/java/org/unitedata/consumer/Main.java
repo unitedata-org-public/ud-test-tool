@@ -136,7 +136,7 @@ public class Main implements Runnable{
         }
     }
 
-
+    /*
     private static final Map<String, ProviderStat> queryProviderStats = new ConcurrentHashMap<String, ProviderStat>();
 
     private static long totalHit = 0;
@@ -185,7 +185,7 @@ public class Main implements Runnable{
                     ", respondCount=" + respondCount +
                     '}';
         }
-    }
+    }*/
 
 
 }
