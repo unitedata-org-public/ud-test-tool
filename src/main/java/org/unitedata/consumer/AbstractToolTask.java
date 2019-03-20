@@ -1,6 +1,7 @@
 package org.unitedata.consumer;
 
 import lombok.extern.slf4j.Slf4j;
+import org.unitedata.consumer.model.ProofData;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -30,12 +31,12 @@ public abstract class AbstractToolTask<In, Out> implements ToolTask{
         try {
             while (!isFinished()) {
                 Out out = null;
-                if (null != inQueue) {
-                    out = process(inQueue.take());
-                } else {
-                    out = process(null);
+                In input = inQueue.take();
+                out = process(input);
+                if(out != null){
+                    outQueue.put(out);
                 }
-                outQueue.put(out);
+
 
             }
         } catch (InterruptedException e) {

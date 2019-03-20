@@ -38,6 +38,7 @@
                 </executions>
             </plugin>
         </plugins>
+        <finalName>test-tool</finalName>
     </build>
     <dependencies>
         <dependency>

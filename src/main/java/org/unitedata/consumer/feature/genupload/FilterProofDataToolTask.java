@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 执行过滤。过滤内容：
  * 1 去重
- * 2 逾期数据不合法的。
  */
 public class FilterProofDataToolTask extends AbstractToolTask<ProofData, ProofData> {
 
@@ -29,11 +28,6 @@ public class FilterProofDataToolTask extends AbstractToolTask<ProofData, ProofDa
         if(cache.putIfAbsent(proofData.getBasicMd5(), proofData) != null){
             return null;
         }
-
-        if(!proofData.checkOverdue()){
-            return null;
-        }
-
         return proofData;
     }
 }

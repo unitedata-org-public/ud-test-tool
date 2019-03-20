@@ -2,9 +2,12 @@ package org.unitedata.consumer.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
+import org.unitedata.consumer.model.Overdue;
 import org.unitedata.consumer.model.ProofData;
+import org.unitedata.utils.JsonUtils;
 import org.unitedata.utils.ProduceHashUtil;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Base64;
 
@@ -22,7 +25,11 @@ public enum ProofParserParser {
         plainText = this.fixUnicodeMagicHeader(plainText);
         //为逾期信息加密
         String[] params = encryptOverdueData(plainText);
-        ;
+
+        if(params == null){
+            return null;
+        }
+
         //将修正后的数据解析为密文数据
         String[] csvLineData = generateUploadCsvLine(params);
 
@@ -33,6 +40,7 @@ public enum ProofParserParser {
         return plainText.replace("\uFEFF", "");//去除unicode头
     }
 
+    //将逾期信息转换为密文，方便后续解析
     private String[] encryptOverdueData(String plainText){
         int first = plainText.indexOf('{');
         int last = plainText.lastIndexOf('}');
@@ -45,7 +53,15 @@ public enum ProofParserParser {
             }
             return split;
         } else {
-            String base64Str = Base64.getEncoder().encodeToString(plainText.substring(first, last + 1).getBytes(Charset.forName("UTF-8")));
+            String overdueStr = plainText.substring(first, last + 1);
+            try{
+                Overdue overdue = JsonUtils.toObject(overdueStr, Overdue.class);
+            }
+            catch (IOException ex){
+                log.error("逾期信息不是合法的json，请确定包含 amount type into_time这三个字段");
+                return null;
+            }
+            String base64Str = Base64.getEncoder().encodeToString(overdueStr.getBytes(Charset.forName("UTF-8")));
             String[] split = plainText.substring(0, first).split(",");
             String[] arr = new String[split.length + 1];
             arr[arr.length - 1] = base64Str;
@@ -64,7 +80,7 @@ public enum ProofParserParser {
             String random = Long.toString(RandomUtils.nextLong());
             String overdue = params[2];
 
-            result[0] = overdue;//逾期
+            result[0] = overdue;//逾期密文。
             result[1] = random;//静态随机数
             result[2] = twoHash;//二要素MD5
             result[3] = ProduceHashUtil.randomHash(twoHash, overdue);//基础数据md5(即二要素md5和逾期信息再进行一层哈希)
