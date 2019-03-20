@@ -18,17 +18,18 @@ import java.util.concurrent.BlockingQueue;
  * @create: 2019/03/13
  */
 @Slf4j
-public class QueryToolTask extends AbstractToolTask<QueryIn, String> {
+public class QueryToolTask extends AbstractToolTask {
     private DataQueryProtocol protocol;
     private Main mainParam;
 
-    public QueryToolTask(PipelineNode node, BlockingQueue<QueryIn> inputQueue, BlockingQueue<String> outputQueue, Main main) {
-        super(node, inputQueue, outputQueue);
+    public QueryToolTask(PipelineNode node, Main main) {
+        super(node);
         this.mainParam = main;
     }
 
     @Override
     protected void preRun() {
+        super.preRun();
         protocol =
                 DataQueryClient
                         .newProtocol(mainParam.account, mainParam.privateKey,
@@ -39,12 +40,12 @@ public class QueryToolTask extends AbstractToolTask<QueryIn, String> {
     }
 
     @Override
-    public String process(QueryIn in) throws TaskToolException {
+    public String process(Object obj) throws TaskToolException {
+        QueryIn in = (QueryIn)obj;
         String result = null;
         try {
             CreditDataProducer[] ret = (CreditDataProducer[])protocol.creditQuery(mainParam.contractId, null,
                     in.getMd5Code(), in.getVerifyMd5Code(), false, in.getRequestedFactor());
-            log.info("剩余"+Main.INPUT_QUEUE.size()+"条记录待查询。");
             Boolean hit = false;
             StringBuilder sb = new StringBuilder("[");
             for (CreditDataProducer p : ret) {

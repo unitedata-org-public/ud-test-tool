@@ -78,12 +78,6 @@ public class Main implements Runnable{
     public boolean generateAndUpload;
 
 
-    public static final BlockingQueue<QueryIn> INPUT_QUEUE = new LinkedBlockingDeque<>();
-    public static final BlockingQueue<String> OUTPUT_QUEUE = new LinkedBlockingDeque<>();
-    public static final BlockingQueue<String> INPUT_FILE_LINES = new LinkedBlockingDeque<>();
-    public static final BlockingQueue<ProofData> PROOF_DATA_BLOCKING_QUEUE = new LinkedBlockingDeque<>();
-    public static final String INPUT_QUEUE_END_MARKER = UUID.randomUUID().toString();
-
     public void run() {
 
         ToolTaskDispatcher dispatcher = new ToolTaskDispatcher();

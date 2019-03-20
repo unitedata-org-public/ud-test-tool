@@ -14,24 +14,15 @@ import java.util.concurrent.BlockingQueue;
  * @create: 2019/03/13
  */
 @Slf4j
-public class BuildingZebraQueryParamToolTask extends AbstractToolTask<String, QueryIn> {
-    public BuildingZebraQueryParamToolTask(PipelineNode node, BlockingQueue<String> inputFileLines, BlockingQueue<QueryIn> inputQueue) {
-        super(node, inputFileLines, inputQueue);
+public class BuildingZebraQueryParamToolTask extends AbstractToolTask {
+    public BuildingZebraQueryParamToolTask(PipelineNode node) {
+        super(node);
     }
 
-    @Override
-    protected void preRun() {
-        try {
-            // 去除第一行
-            Main.INPUT_FILE_LINES.take();
-            Main.OUTPUT_QUEUE.put("二要素md5,基础数据md5,动态随机数,是否命中,提供方详情\n");
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
 
     @Override
-    public QueryIn process(String s) throws TaskToolException {
+    public QueryIn process(Object  obj) throws TaskToolException {
+        String s = (String)obj;
         String[] params = s.trim().split(",");
         if (params.length < 3) {
             throw new TaskToolException("参数格式不正确 -> " + s);

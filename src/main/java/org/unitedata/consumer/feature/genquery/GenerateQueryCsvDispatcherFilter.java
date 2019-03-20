@@ -23,8 +23,8 @@ public class GenerateQueryCsvDispatcherFilter implements DispatcherFilter {
     @Override
     public Pipeline build() {
         Pipeline pipeline = new Pipeline();
-        pipeline.startNode(new PipelineStartNode(s -> s != null && s.length() > 0, mainParam))
-                .addPipelineNode(PipelineNodes.nodeGenerateQueryCsv(pipeline, Main.INPUT_FILE_LINES, Main.INPUT_QUEUE))
+        pipeline.startNode(new PipelineStartNode(mainParam, BizConstants.QueryCsvHeader))
+                .addPipelineNode(PipelineNodes.nodeGenerateQueryCsv(pipeline))
                 .endNode(new PipelineEndNode(pipeline, mainParam));
         return pipeline;
     }

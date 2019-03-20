@@ -1,11 +1,15 @@
 package org.unitedata.consumer;
 
+import lombok.Data;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.unitedata.consumer.protocal.DataRecord;
+import org.unitedata.consumer.protocal.DataType;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.nio.channels.Pipe;
+import java.nio.charset.Charset;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,15 +22,30 @@ public class PipelineEndNode {
 
     private Pipeline pipeline;
 
-    private File outputFile;
-    private long lineCount;
+    @Setter
+    private BlockingQueue<DataRecord> inputQueue;
+
+    //输出终端
+    private Writer outputEndPoint;
+
 
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+    public PipelineEndNode(Pipeline pipeline, Writer writer){
+        this.pipeline = pipeline;
+        this.outputEndPoint = writer;
+    }
+
     public PipelineEndNode(Pipeline pipeline, Main mainParam) {
         if (null == mainParam && null == mainParam.outFilePath) {
             throw new IllegalArgumentException("mainParam.outFilePath不能为空");
         }
-        this.outputFile = new File(mainParam.outFilePath);
+        try{
+            this.outputEndPoint = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mainParam.outFilePath), Charset.forName("UTF-8")));
+        }
+        catch (Exception ex){
+            throw new TaskToolException(ex);
+        }
         this.pipeline = pipeline;
     }
 
@@ -35,39 +54,38 @@ public class PipelineEndNode {
      */
     public void startWriteAsync() {
         executorService.execute(() -> {
-            FileOutputStream outputStream;
-            try {
-                outputStream = new FileOutputStream(outputFile);
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
             while (true) {
                 try {
-                    Object data = Main.OUTPUT_QUEUE.take();
-                    if(data == JobEndingSignal.INSTANCE){
+                    DataRecord data = this.inputQueue.take();
+                    String line = null;
+                    if(data.getType() == DataType.ENDMARK){
+                        //前面的节点协议保证了每个节点收到的数据都是按HEADER-DATA-END有序的，所以收到END时，前面的数据一定都已经处理完毕。
                         break;
                     }
-                    String line = (String)data;
-                    ++lineCount;
+                    line = (String)data.getPayload();
                     log.info("输出日志 : " + line);
-                    outputStream.write(line.getBytes("UTF-8"));
+                    this.outputEndPoint.write(line);
                 } catch (Exception e) {
                     Thread.currentThread().interrupt();
                 }
             }
-            signalEnd();
+            end();
         });
 
 
     }
 
-    private void signalEnd(){
+    private void end(){
+        //关闭线程池
         executorService.shutdown();
+        //刷缓冲，关闭输出流
+        try{
+            this.outputEndPoint.flush();
+            this.outputEndPoint.close();
+        }
+        catch (IOException ex){}
+        //告知处理线本节点已关闭，便于让主线程后续退出
         this.pipeline.onNodeFinished(this);
-    }
-
-    public long getLineCount() {
-        return lineCount;
     }
 
 }

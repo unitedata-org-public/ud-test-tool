@@ -1,7 +1,12 @@
 package org.unitedata.consumer;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.ObjectError;
+import org.unitedata.consumer.protocal.DataRecord;
+import org.unitedata.consumer.util.DataRecords;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -11,94 +16,55 @@ import java.util.concurrent.BlockingQueue;
  * @create: 2019/03/14
  */
 @Slf4j
-public abstract class BatchInputToolTask<In, Out> implements ToolTask{
+public abstract class BatchInputToolTask extends AbstractToolTask{
 
-    private PipelineNode node;
-    private BlockingQueue<In> inQueue;
-    private BlockingQueue<Out> outQueue;
-    private boolean finished;
-    private int batchSize = 1;
+    private final int batchSize;
 
-    private List<In> buf = new LinkedList<>();
+    private List buf = new ArrayList();
 
-    public BatchInputToolTask(PipelineNode node, BlockingQueue<In> inQueue, BlockingQueue<Out> outQueue, int batchSize) {
-        if (batchSize < 1) {
-            throw new IllegalArgumentException("batchSize不能小于1");
-        }
-        if (null == outQueue || null == inQueue) {
-            throw new IllegalArgumentException("outQueue和inQueue不能为空");
-        }
-        this.node = node;
-        this.node.setTask(this);
-        this.inQueue = inQueue;
-        this.outQueue = outQueue;
+    public BatchInputToolTask(PipelineNode node,  int batchSize) {
+        super(node);
         this.batchSize = batchSize;
-
     }
 
 
     @Override
-    public void run() {
-        preRun();
-        buf.clear();
-        try {
-            while (true) {
-                In in = inQueue.take();
-                if (in == JobEndingSignal.INSTANCE) {
-                    break;
-                }
-                if(in == null){
-                    continue;
-                }
-                if (buf.size() < batchSize) {
-                    buf.add(in);
-                    if (buf.size() >= batchSize) {
-                        processBufAndOutput();
-                    }
-                }
-            }
-            // 结束后把buf剩余的处理掉
+    protected synchronized void doHandleData(DataRecord input) throws InterruptedException{
+        if (buf.size() < batchSize) {
+            buf.add(input);
+        }
+
+        if (buf.size() >= batchSize) {
             processBufAndOutput();
-            onTaskFinished();
-
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } catch (TaskToolException e) {
-            log.error(e.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            postRun();
         }
-
-
-    }
-
-    private void onTaskFinished() throws InterruptedException{
-        log.info("Task {} finished ",this.getClass());
-        BlockingQueue outputQueue = outQueue;
-        outputQueue.put(JobEndingSignal.INSTANCE);
-        this.node.onTaskFinished(this);
-    }
-
-    private void processBufAndOutput() throws TaskToolException, InterruptedException {
-        List<Out> output = process(buf);
-        buf.clear();
-        for (Out out : output) {
-            outQueue.put(out);
-        }
-    }
-
-    protected abstract List<Out> process(List<In> buf) throws TaskToolException;
-
-    protected void postRun(){
-    }
-
-    protected void preRun() {
     }
 
     @Override
-    public PipelineNode getNode() {
-        return this.node;
+    protected void clean(){
+        try {
+            processBufAndOutput();
+        }
+        catch (InterruptedException e){
+            Thread.currentThread().interrupt();
+        }
     }
+
+    private synchronized void processBufAndOutput() throws InterruptedException {
+        List output = processBuf(buf);
+        try{
+            for (Object out : output){
+                int sequen = getNode().getDataSent().incrementAndGet();
+                DataRecord outputRecord = DataRecords.createContentRecord(out, sequen);
+                getNode().getOutputQueue().put(outputRecord);
+            }
+            super.getNode().getProcessedInputCount().addAndGet(buf.size());
+            buf.clear();
+        }
+        catch (InterruptedException ex){
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    protected abstract List processBuf(List buf);
+
 }

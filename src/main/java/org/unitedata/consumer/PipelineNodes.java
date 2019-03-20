@@ -17,45 +17,45 @@ import java.util.concurrent.BlockingQueue;
  */
 public class PipelineNodes {
 
-    public static PipelineNode nodeGenerateQueryCsv(Pipeline pipeline, BlockingQueue inQueue, BlockingQueue outQueue){
+    public static PipelineNode nodeGenerateQueryCsv(Pipeline pipeline){
         PipelineNode node = new PipelineNode(pipeline);
-        ToolTask task = new GenerateQueryCsvToolTask(node, inQueue, outQueue);
+        ToolTask task = new GenerateQueryCsvToolTask(node);
         return node;
     }
 
-    public static PipelineNode nodeBuildProofData(Pipeline pipeline, BlockingQueue<String> input, BlockingQueue<ProofData> output){
+    public static PipelineNode nodeBuildProofData(Pipeline pipeline){
         PipelineNode node = new PipelineNode(pipeline);
-        ToolTask task = new BuildProofDataToolTask(node, input, output);
+        ToolTask task = new BuildProofDataToolTask(node);
         return node;
     }
 
-    public static PipelineNode nodeFilterProofData(Pipeline pipeline, BlockingQueue<ProofData> input, BlockingQueue<ProofData> output){
+    public static PipelineNode nodeFilterProofData(Pipeline pipeline){
         PipelineNode node = new PipelineNode(pipeline);
-        ToolTask task = new FilterProofDataToolTask(node, input, output);
+        ToolTask task = new FilterProofDataToolTask(node);
         return node;
     }
 
-    public static PipelineNode nodeConvertProofToString(Pipeline pipeline, BlockingQueue<ProofData> input, BlockingQueue<String> output){
+    public static PipelineNode nodeConvertProofToString(Pipeline pipeline){
         PipelineNode node = new PipelineNode(pipeline);
-        ToolTask task = new ConvertProofToStringTask(node, input, output);
+        ToolTask task = new ConvertProofToStringTask(node);
         return node;
     }
 
-    public static PipelineNode nodePushProofData(Pipeline pipeline, BlockingQueue inQueue, BlockingQueue outQueue, int batchSize, Main main){
+    public static PipelineNode nodePushProofData(Pipeline pipeline, int batchSize, Main main){
         PipelineNode node = new PipelineNode(pipeline);
-        ToolTask task = new PushProofDataToolTask(node, inQueue, outQueue, batchSize, main);
+        ToolTask task = new PushProofDataToolTask(node, batchSize, main);
         return node;
     }
 
-    public static PipelineNode nodeBuildZebraQueryParam(Pipeline pipeline, BlockingQueue<String> inputFileLines, BlockingQueue<QueryIn> inputQueue){
+    public static PipelineNode nodeBuildZebraQueryParam(Pipeline pipeline){
         PipelineNode node = new PipelineNode(pipeline);
-        ToolTask task = new BuildingZebraQueryParamToolTask(node, inputFileLines, inputQueue);
+        ToolTask task = new BuildingZebraQueryParamToolTask(node);
         return node;
     }
 
-    public static PipelineNode nodeZebraQuery(Pipeline pipeline,BlockingQueue<QueryIn> inputQueue, BlockingQueue<String> outputQueue, Main main, int threads){
+    public static PipelineNode nodeZebraQuery(Pipeline pipeline, Main main, int threads){
         PipelineNode node = new PipelineNode(pipeline, threads);
-        ToolTask task = new QueryToolTask(node, inputQueue, outputQueue, main);
+        ToolTask task = new QueryToolTask(node, main);
         return node;
     }
 }

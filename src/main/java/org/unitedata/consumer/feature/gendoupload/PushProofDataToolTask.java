@@ -28,18 +28,19 @@ import java.util.concurrent.BlockingQueue;
 
 /**
  * @author: hushi
+ * @author: sanbanfu
  * @create: 2019/03/15
  */
 @Slf4j
-public class PushProofDataToolTask extends BatchInputToolTask<ProofData, String>{
+public class PushProofDataToolTask extends BatchInputToolTask{
 
     Main mainParam;
     ProofParserParser parser = ProofParserParser.INSTANCE;
     EosClient eosClient;
 
 
-    public PushProofDataToolTask(PipelineNode node, BlockingQueue<ProofData> inQueue, BlockingQueue<String> outQueue, int batchSize, Main mainParam) {
-        super(node, inQueue, outQueue, batchSize);
+    public PushProofDataToolTask(PipelineNode node,int batchSize, Main mainParam) {
+        super(node, batchSize);
         this.mainParam = mainParam;
         if (null != mainParam.eosHost) {
             eosClient = new DefaultEosClient(new EosApiImpl(mainParam.eosHost));
@@ -48,24 +49,8 @@ public class PushProofDataToolTask extends BatchInputToolTask<ProofData, String>
         }
     }
 
-    @Override
-    protected List<String> process(List<ProofData> buf) throws TaskToolException {
-        List<String> output = new LinkedList<>();
-        try {
-            String trxId = pushBatchProof(buf);
-            log.info("获取到trxId "+trxId);
-            for (ProofData proofData: buf) {
-                proofData.setTransactionId(trxId);
-                String str = parser.fromProofDataToString(proofData);
-                output.add(str);
-            }
-        } catch (Exception e) {
-            throw new TaskToolException(e);
-        }
-        return output;
-    }
 
-    public String pushBatchProof(List<ProofData> proofs) throws Exception{
+    private String pushBatchProof(List<ProofData> proofs) throws Exception{
         String contractAddress = this.mainParam.contractId;
         String account = this.mainParam.account;
         String privateKey = this.mainParam.privateKey;
@@ -126,6 +111,30 @@ public class PushProofDataToolTask extends BatchInputToolTask<ProofData, String>
         }
 
         return transactionResult.getTransactionId();
+    }
+
+    @Override
+    protected List processBuf(List buf) {
+
+        List<String> output = new LinkedList<>();
+        try {
+            String trxId = pushBatchProof(buf);
+            log.info("获取到trxId "+trxId);
+            for (Object obj: buf) {
+                ProofData proofData = (ProofData)obj;
+                proofData.setTransactionId(trxId);
+                String str = parser.fromProofDataToString(proofData);
+                output.add(str);
+            }
+        } catch (Exception e) {
+            throw new TaskToolException(e);
+        }
+        return output;
+    }
+
+    @Override
+    protected Object process(Object in) throws TaskToolException {
+        throw new TaskToolException("Not Allowed");
     }
 
 

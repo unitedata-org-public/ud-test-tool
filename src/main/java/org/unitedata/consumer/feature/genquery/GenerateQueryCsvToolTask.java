@@ -17,30 +17,15 @@ import java.util.concurrent.BlockingQueue;
  * @create: 2019/03/13
  */
 @Slf4j
-public class GenerateQueryCsvToolTask extends AbstractToolTask<String, String> {
-
-    public GenerateQueryCsvToolTask(PipelineNode node, BlockingQueue<String> inQueue, BlockingQueue<String> outQueue) {
-        super(node, inQueue, outQueue);
-    }
+public class GenerateQueryCsvToolTask extends AbstractToolTask {
 
     public GenerateQueryCsvToolTask(PipelineNode node) {
-        this(node, Main.INPUT_FILE_LINES, Main.OUTPUT_QUEUE);
-
+        super(node);
     }
 
     @Override
-    protected void preRun() {
-        try {
-            Main.INPUT_FILE_LINES.take();
-            Main.OUTPUT_QUEUE.put("二要素md5,基础数据md5,动态随机数\n");
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-    }
-
-    @Override
-    public String process(String s) throws TaskToolException {
+    public Object process(Object obj) throws TaskToolException {
+        String s = (String)obj;
         s = s.replace("\uFEFF", "");
         return generateQueryCsvLine(s.trim().split(","));
 

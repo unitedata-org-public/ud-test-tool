@@ -1,10 +1,13 @@
 package org.unitedata.consumer;
 
 import lombok.extern.slf4j.Slf4j;
+import org.unitedata.consumer.protocal.DataRecord;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -18,7 +21,7 @@ public class Pipeline {
     private Map<Integer, PipelineNode> nodes;
     private PipelineStartNode startNode;
     private PipelineEndNode endNode;
-
+    private BlockingQueue<DataRecord> lastOutputQueue;
     private CountDownLatch latch;
 
     private boolean requiredInputFiles = true;
@@ -28,6 +31,8 @@ public class Pipeline {
 
     public Pipeline startNode(PipelineStartNode startNode) {
         this.startNode = startNode;
+        startNode.setOutputQueue(new LinkedBlockingQueue<>());
+        this.lastOutputQueue = startNode.outputQueue;
         return this;
     }
 
@@ -38,6 +43,7 @@ public class Pipeline {
 
     public Pipeline endNode(PipelineEndNode endNode) {
         this.endNode = endNode;
+        endNode.setInputQueue(this.lastOutputQueue);
         return this;
     }
 
@@ -47,6 +53,9 @@ public class Pipeline {
         }
         int size = nodes.size();
         nodes.put(size + 1, node);
+        node.setInputQueue(lastOutputQueue);
+        node.setOutputQueue(new LinkedBlockingQueue<>());
+        this.lastOutputQueue = node.getOutputQueue();
         return this;
     }
 
@@ -102,5 +111,6 @@ public class Pipeline {
         log.info("Pipeline Node Finished.");
         latch.countDown();
     }
+
 
 }

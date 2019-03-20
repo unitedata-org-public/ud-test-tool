@@ -13,16 +13,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * 执行过滤。过滤内容：
  * 1 去重
  */
-public class FilterProofDataToolTask extends AbstractToolTask<ProofData, ProofData> {
+public class FilterProofDataToolTask extends AbstractToolTask {
 
-    public FilterProofDataToolTask(PipelineNode node, BlockingQueue<ProofData> inQueue, BlockingQueue<ProofData> outQueue) {
-        super(node, inQueue, outQueue);
+    public FilterProofDataToolTask(PipelineNode node) {
+        super(node);
     }
 
-    private ConcurrentHashMap<String, ProofData> cache = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, ProofData> cache = new ConcurrentHashMap<>();
 
     @Override
-    protected ProofData process(ProofData proofData) throws TaskToolException {
+    protected Object process(Object obj) throws TaskToolException {
+        ProofData proofData = (ProofData)obj;
         if(proofData == null){
             return null;
         }

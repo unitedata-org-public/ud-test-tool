@@ -26,9 +26,9 @@ public class QueryDispatcherFilter implements DispatcherFilter {
     @Override
     public Pipeline build() {
         Pipeline pipeline = new Pipeline();
-        pipeline.startNode(new PipelineStartNode(s -> s != null && s.length() > 0, mainParam))
-                .addPipelineNode(PipelineNodes.nodeBuildZebraQueryParam(pipeline, Main.INPUT_FILE_LINES, Main.INPUT_QUEUE))
-                .addPipelineNode(PipelineNodes.nodeZebraQuery(pipeline, Main.INPUT_QUEUE, Main.OUTPUT_QUEUE, mainParam, mainParam.threads))
+        pipeline.startNode(new PipelineStartNode(mainParam, BizConstants.QueryResultHeader))
+                .addPipelineNode(PipelineNodes.nodeBuildZebraQueryParam(pipeline))
+                .addPipelineNode(PipelineNodes.nodeZebraQuery(pipeline, mainParam, mainParam.threads))
                 .endNode(new PipelineEndNode(pipeline, mainParam));
         return pipeline;
     }

@@ -23,10 +23,10 @@ public class GenerateUploadCsvDispatcherFilter implements DispatcherFilter {
     @Override
     public Pipeline build() {
         Pipeline pipeline = new Pipeline();
-        pipeline.startNode(new PipelineStartNode(s -> s != null && s.length() > 0, mainParam))
-                .addPipelineNode(PipelineNodes.nodeBuildProofData(pipeline, Main.INPUT_FILE_LINES, Main.PROOF_DATA_BLOCKING_QUEUE))
-                .addPipelineNode(PipelineNodes.nodeFilterProofData(pipeline, Main.PROOF_DATA_BLOCKING_QUEUE, Main.PROOF_DATA_BLOCKING_QUEUE))
-                .addPipelineNode(PipelineNodes.nodeConvertProofToString(pipeline, Main.PROOF_DATA_BLOCKING_QUEUE, Main.OUTPUT_QUEUE))
+        pipeline.startNode(new PipelineStartNode(mainParam, BizConstants.EncryptedCsvHeader))
+                .addPipelineNode(PipelineNodes.nodeBuildProofData(pipeline))
+                .addPipelineNode(PipelineNodes.nodeFilterProofData(pipeline))
+                .addPipelineNode(PipelineNodes.nodeConvertProofToString(pipeline))
                 .endNode(new PipelineEndNode(pipeline, mainParam));
         return pipeline;
     }

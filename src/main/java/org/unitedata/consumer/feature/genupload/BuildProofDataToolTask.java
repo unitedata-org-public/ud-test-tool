@@ -10,33 +10,25 @@ import java.util.concurrent.BlockingQueue;
 
 /**
  * @author: hushi
+ * @author: sanbanfu
  * @create: 2019/03/14
  */
-public class BuildProofDataToolTask extends AbstractToolTask<String, ProofData>{
+public class BuildProofDataToolTask extends AbstractToolTask{
 
     private ProofParserParser proofParserParser = ProofParserParser.INSTANCE;
 
 
-    public BuildProofDataToolTask(PipelineNode node, BlockingQueue<String> inQueue, BlockingQueue<ProofData> outQueue) {
-        super(node, inQueue, outQueue);
+    public BuildProofDataToolTask(PipelineNode node) {
+        super(node);
     }
 
     @Override
-    protected ProofData process(String s) throws TaskToolException {
-        if(s == null){
+    protected Object process(Object in) throws TaskToolException {
+        if(in == null){
             return null;
         }
+        String s = (String)in;
         return proofParserParser.toProofData(s);
     }
 
-
-    @Override
-    protected void preRun() {
-        try {
-            Main.INPUT_FILE_LINES.take();
-            Main.OUTPUT_QUEUE.put(BizConstants.EncryptedCsvHeader);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
 }
