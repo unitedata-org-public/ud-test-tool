@@ -21,6 +21,7 @@ public class Overdue {
     public Overdue() {
     }
 
+    //应该写在OverdueUtils里啊
     public Overdue(long l) {
         this.amount = l % 3 == 0 ? "small" : l % 3 == 1 ? "middle" : "big";
         this.type = l % 2 == 0 ? "M2" : "M3";

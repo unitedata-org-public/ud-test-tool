@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author: hushi
@@ -16,6 +18,8 @@ public class Pipeline {
     private Map<Integer, PipelineNode> nodes;
     private PipelineStartNode startNode;
     private PipelineEndNode endNode;
+
+    private CountDownLatch latch;
 
     private boolean requiredInputFiles = true;
 
@@ -47,23 +51,26 @@ public class Pipeline {
     }
 
     public void work() {
+        this.latch = new CountDownLatch(nodes.size()+1);//工作节点 + 终结节点
         if (requiredInputFiles) {
             startNode.read();
         }
         long begin = System.currentTimeMillis();
 
         for (Map.Entry<Integer, PipelineNode> node : nodes.entrySet()) {
-            node.getValue().work();
+            node.getValue().workAsync();
         }
-        endNode.write();
-        while (!taskIsFinished()) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+        endNode.startWriteAsync();
+        log.info("async nodes count:{}",nodes.size()+1);
+        try{
+            while(!allWorkingNodesAreFinished()){
+              //  System.out.println(this.latch.getCount());
             }
         }
-        endNode.finish();
+        catch (InterruptedException ex){
+            Thread.currentThread().interrupt();
+        }
+
         log.info("任务已结束");
         long end = System.currentTimeMillis();
         log.info("共用时" + (end - begin) + "毫秒。");
@@ -81,7 +88,19 @@ public class Pipeline {
         return endNode;
     }
 
-    protected boolean taskIsFinished() {
-        return endNode.getLineCount() >= startNode.getLineCount();
+    protected final boolean allWorkingNodesAreFinished() throws InterruptedException {
+        return latch.await(10, TimeUnit.SECONDS);
     }
+
+
+    public void onNodeFinished(PipelineEndNode pipelineEndNode) {
+        log.info("Pipeline End Node Finished.");
+        latch.countDown();
+    }
+
+    public void onNodeFinished(PipelineNode pipelineNode) {
+        log.info("Pipeline Node Finished.");
+        latch.countDown();
+    }
+
 }

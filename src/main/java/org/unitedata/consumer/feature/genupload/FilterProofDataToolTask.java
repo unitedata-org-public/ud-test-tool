@@ -1,6 +1,8 @@
 package org.unitedata.consumer.feature.genupload;
 
 import org.unitedata.consumer.AbstractToolTask;
+import org.unitedata.consumer.Pipeline;
+import org.unitedata.consumer.PipelineNode;
 import org.unitedata.consumer.TaskToolException;
 import org.unitedata.consumer.model.ProofData;
 
@@ -13,8 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class FilterProofDataToolTask extends AbstractToolTask<ProofData, ProofData> {
 
-    public FilterProofDataToolTask(BlockingQueue<ProofData> inQueue, BlockingQueue<ProofData> outQueue) {
-        super(inQueue, outQueue);
+    public FilterProofDataToolTask(PipelineNode node, BlockingQueue<ProofData> inQueue, BlockingQueue<ProofData> outQueue) {
+        super(node, inQueue, outQueue);
     }
 
     private ConcurrentHashMap<String, ProofData> cache = new ConcurrentHashMap<>();
@@ -24,7 +26,6 @@ public class FilterProofDataToolTask extends AbstractToolTask<ProofData, ProofDa
         if(proofData == null){
             return null;
         }
-
         if(cache.putIfAbsent(proofData.getBasicMd5(), proofData) != null){
             return null;
         }

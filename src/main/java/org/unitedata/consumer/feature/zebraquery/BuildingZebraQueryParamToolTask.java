@@ -3,6 +3,7 @@ package org.unitedata.consumer.feature.zebraquery;
 import lombok.extern.slf4j.Slf4j;
 import org.unitedata.consumer.AbstractToolTask;
 import org.unitedata.consumer.Main;
+import org.unitedata.consumer.PipelineNode;
 import org.unitedata.consumer.TaskToolException;
 import org.unitedata.consumer.model.QueryIn;
 
@@ -13,9 +14,9 @@ import java.util.concurrent.BlockingQueue;
  * @create: 2019/03/13
  */
 @Slf4j
-public class BuildingQueryParamToolTask extends AbstractToolTask<String, QueryIn> {
-    public BuildingQueryParamToolTask(BlockingQueue<String> inputFileLines, BlockingQueue<QueryIn> inputQueue) {
-        super(inputFileLines, inputQueue);
+public class BuildingZebraQueryParamToolTask extends AbstractToolTask<String, QueryIn> {
+    public BuildingZebraQueryParamToolTask(PipelineNode node, BlockingQueue<String> inputFileLines, BlockingQueue<QueryIn> inputQueue) {
+        super(node, inputFileLines, inputQueue);
     }
 
     @Override

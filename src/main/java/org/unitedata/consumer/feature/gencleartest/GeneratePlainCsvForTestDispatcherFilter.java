@@ -1,4 +1,4 @@
-package org.unitedata.consumer.feature.genquery;
+package org.unitedata.consumer.feature.gencleartest;
 
 import org.unitedata.consumer.*;
 
@@ -6,9 +6,9 @@ import org.unitedata.consumer.*;
  * @author: hushi
  * @create: 2019/03/13
  */
-public class GenerateQueryCsvDispatcherFilter implements DispatcherFilter {
+public class GeneratePlainCsvForTestDispatcherFilter implements DispatcherFilter {
     private Main mainParam;
-    public GenerateQueryCsvDispatcherFilter(Main mainParam) {
+    public GeneratePlainCsvForTestDispatcherFilter(Main mainParam) {
         if (mainParam == null) {
             throw new IllegalArgumentException("main不能为空");
         }
@@ -17,14 +17,13 @@ public class GenerateQueryCsvDispatcherFilter implements DispatcherFilter {
 
     @Override
     public boolean isMatch() {
-        return mainParam.generateQueryCsv;
+        return mainParam.generateTestCsv;
     }
 
     @Override
     public Pipeline build() {
         Pipeline pipeline = new Pipeline();
-        pipeline.startNode(new PipelineStartNode(s -> s != null && s.length() > 0, mainParam))
-                .addPipelineNode(PipelineNodes.nodeGenerateQueryCsv(pipeline, Main.INPUT_FILE_LINES, Main.INPUT_QUEUE))
+        pipeline.startNode(new PlainCsvGenerateStartNode(mainParam.testCsvCount))
                 .endNode(new PipelineEndNode(pipeline, mainParam));
         return pipeline;
     }

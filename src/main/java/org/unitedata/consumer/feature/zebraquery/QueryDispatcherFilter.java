@@ -1,11 +1,6 @@
 package org.unitedata.consumer.feature.zebraquery;
 
-import org.unitedata.consumer.DispatcherFilter;
-import org.unitedata.consumer.Main;
-import org.unitedata.consumer.Pipeline;
-import org.unitedata.consumer.PipelineEndNode;
-import org.unitedata.consumer.PipelineNode;
-import org.unitedata.consumer.PipelineStartNode;
+import org.unitedata.consumer.*;
 
 /**
  * @author: hushi
@@ -32,9 +27,9 @@ public class QueryDispatcherFilter implements DispatcherFilter {
     public Pipeline build() {
         Pipeline pipeline = new Pipeline();
         pipeline.startNode(new PipelineStartNode(s -> s != null && s.length() > 0, mainParam))
-                .addPipelineNode(new PipelineNode(new BuildingQueryParamToolTask(Main.INPUT_FILE_LINES, Main.INPUT_QUEUE)))
-                .addPipelineNode(new PipelineNode(new QueryToolTask(Main.INPUT_QUEUE, Main.OUTPUT_QUEUE, mainParam), mainParam.threads))
-                .endNode(new PipelineEndNode(mainParam));
+                .addPipelineNode(PipelineNodes.nodeBuildZebraQueryParam(pipeline, Main.INPUT_FILE_LINES, Main.INPUT_QUEUE))
+                .addPipelineNode(PipelineNodes.nodeZebraQuery(pipeline, Main.INPUT_QUEUE, Main.OUTPUT_QUEUE, mainParam, mainParam.threads))
+                .endNode(new PipelineEndNode(pipeline, mainParam));
         return pipeline;
     }
 

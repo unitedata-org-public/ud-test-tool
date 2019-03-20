@@ -4,6 +4,7 @@ package org.unitedata.consumer.feature.genquery;
 import lombok.extern.slf4j.Slf4j;
 import org.unitedata.consumer.AbstractToolTask;
 import org.unitedata.consumer.Main;
+import org.unitedata.consumer.PipelineNode;
 import org.unitedata.consumer.TaskToolException;
 import org.unitedata.utils.DateUtils;
 import org.unitedata.utils.ProduceHashUtil;
@@ -18,12 +19,12 @@ import java.util.concurrent.BlockingQueue;
 @Slf4j
 public class GenerateQueryCsvToolTask extends AbstractToolTask<String, String> {
 
-    public GenerateQueryCsvToolTask(BlockingQueue<String> inQueue, BlockingQueue<String> outQueue) {
-        super(inQueue, outQueue);
+    public GenerateQueryCsvToolTask(PipelineNode node, BlockingQueue<String> inQueue, BlockingQueue<String> outQueue) {
+        super(node, inQueue, outQueue);
     }
 
-    public GenerateQueryCsvToolTask() {
-        this(Main.INPUT_FILE_LINES, Main.OUTPUT_QUEUE);
+    public GenerateQueryCsvToolTask(PipelineNode node) {
+        this(node, Main.INPUT_FILE_LINES, Main.OUTPUT_QUEUE);
 
     }
 

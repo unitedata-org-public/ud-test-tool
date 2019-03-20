@@ -3,6 +3,7 @@ package org.unitedata.consumer.feature.zebraquery;
 import lombok.extern.slf4j.Slf4j;
 import org.unitedata.consumer.AbstractToolTask;
 import org.unitedata.consumer.Main;
+import org.unitedata.consumer.PipelineNode;
 import org.unitedata.consumer.TaskToolException;
 import org.unitedata.consumer.model.QueryIn;
 import org.unitedata.consumer.model.QueryOut;
@@ -21,8 +22,8 @@ public class QueryToolTask extends AbstractToolTask<QueryIn, String> {
     private DataQueryProtocol protocol;
     private Main mainParam;
 
-    public QueryToolTask(BlockingQueue<QueryIn> inputQueue, BlockingQueue<String> outputQueue, Main main) {
-        super(inputQueue, outputQueue);
+    public QueryToolTask(PipelineNode node, BlockingQueue<QueryIn> inputQueue, BlockingQueue<String> outputQueue, Main main) {
+        super(node, inputQueue, outputQueue);
         this.mainParam = main;
     }
 

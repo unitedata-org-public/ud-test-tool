@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.unitedata.consumer.BatchInputToolTask;
 import org.unitedata.consumer.Main;
+import org.unitedata.consumer.PipelineNode;
 import org.unitedata.consumer.TaskToolException;
 import org.unitedata.consumer.model.ProofData;
 import org.unitedata.consumer.util.ProofParserParser;
@@ -37,8 +38,8 @@ public class PushProofDataToolTask extends BatchInputToolTask<ProofData, String>
     EosClient eosClient;
 
 
-    public PushProofDataToolTask(BlockingQueue<ProofData> inQueue, BlockingQueue<String> outQueue, int batchSize, ProofData endMarker, Main mainParam) {
-        super(inQueue, outQueue, batchSize, endMarker);
+    public PushProofDataToolTask(PipelineNode node, BlockingQueue<ProofData> inQueue, BlockingQueue<String> outQueue, int batchSize, Main mainParam) {
+        super(node, inQueue, outQueue, batchSize);
         this.mainParam = mainParam;
         if (null != mainParam.eosHost) {
             eosClient = new DefaultEosClient(new EosApiImpl(mainParam.eosHost));
@@ -126,6 +127,7 @@ public class PushProofDataToolTask extends BatchInputToolTask<ProofData, String>
 
         return transactionResult.getTransactionId();
     }
+
 
     @Data
     private final class ProofForUpload {

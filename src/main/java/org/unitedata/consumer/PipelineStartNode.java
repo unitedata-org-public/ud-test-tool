@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.concurrent.BlockingQueue;
 import java.util.function.Predicate;
 
 /**
@@ -15,13 +16,10 @@ import java.util.function.Predicate;
  */
 public class PipelineStartNode {
 
-    private Main mainParam;
-    private long lineCount;
+    protected Main mainParam;
+    protected long lineCount;
 
     public PipelineStartNode(Predicate<String> predicate, Main mainParam) {
-        if (null == predicate || null == mainParam) {
-            throw new IllegalArgumentException("predicate和mainParam不能为空");
-        }
         this.predicate = predicate;
         this.mainParam = mainParam;
     }
@@ -56,5 +54,12 @@ public class PipelineStartNode {
     }
 
     protected void postRead() {
+        BlockingQueue input = Main.INPUT_FILE_LINES;
+        try{
+            input.put(JobEndingSignal.INSTANCE);
+        }
+        catch (InterruptedException ex){
+            Thread.currentThread().interrupt();
+        }
     }
 }

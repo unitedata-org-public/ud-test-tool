@@ -13,28 +13,26 @@ import java.util.concurrent.BlockingQueue;
 @Slf4j
 public abstract class BatchInputToolTask<In, Out> implements ToolTask{
 
+    private PipelineNode node;
     private BlockingQueue<In> inQueue;
     private BlockingQueue<Out> outQueue;
     private boolean finished;
     private int batchSize = 1;
-    private In endMarker;
 
     private List<In> buf = new LinkedList<>();
 
-    public BatchInputToolTask(BlockingQueue<In> inQueue, BlockingQueue<Out> outQueue, int batchSize, In endMarker) {
+    public BatchInputToolTask(PipelineNode node, BlockingQueue<In> inQueue, BlockingQueue<Out> outQueue, int batchSize) {
         if (batchSize < 1) {
             throw new IllegalArgumentException("batchSize不能小于1");
         }
         if (null == outQueue || null == inQueue) {
             throw new IllegalArgumentException("outQueue和inQueue不能为空");
         }
-        if (null == endMarker) {
-            throw new IllegalArgumentException("endMarker不能为空");
-        }
+        this.node = node;
+        this.node.setTask(this);
         this.inQueue = inQueue;
         this.outQueue = outQueue;
         this.batchSize = batchSize;
-        this.endMarker = endMarker;
 
     }
 
@@ -44,9 +42,9 @@ public abstract class BatchInputToolTask<In, Out> implements ToolTask{
         preRun();
         buf.clear();
         try {
-            while (!isFinished()) {
+            while (true) {
                 In in = inQueue.take();
-                if (in == endMarker) {
+                if (in == JobEndingSignal.INSTANCE) {
                     break;
                 }
                 if(in == null){
@@ -61,6 +59,8 @@ public abstract class BatchInputToolTask<In, Out> implements ToolTask{
             }
             // 结束后把buf剩余的处理掉
             processBufAndOutput();
+            onTaskFinished();
+
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (TaskToolException e) {
@@ -72,6 +72,13 @@ public abstract class BatchInputToolTask<In, Out> implements ToolTask{
         }
 
 
+    }
+
+    private void onTaskFinished() throws InterruptedException{
+        log.info("Task {} finished ",this.getClass());
+        BlockingQueue outputQueue = outQueue;
+        outputQueue.put(JobEndingSignal.INSTANCE);
+        this.node.onTaskFinished(this);
     }
 
     private void processBufAndOutput() throws TaskToolException, InterruptedException {
@@ -91,11 +98,7 @@ public abstract class BatchInputToolTask<In, Out> implements ToolTask{
     }
 
     @Override
-    public void finish() {
-        this.finished = true;
-    }
-
-    public boolean isFinished() {
-        return finished;
+    public PipelineNode getNode() {
+        return this.node;
     }
 }

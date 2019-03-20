@@ -1,5 +1,5 @@
 package org.unitedata.consumer;
 
 public class JobEndingSignal {
-    public static JobEndingSignal INSTANCE;
+    public static final JobEndingSignal INSTANCE = new JobEndingSignal();
 }

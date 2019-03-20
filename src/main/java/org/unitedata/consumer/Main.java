@@ -1,7 +1,7 @@
 package org.unitedata.consumer;
 
 import lombok.extern.slf4j.Slf4j;
-import org.unitedata.consumer.feature.gencleartest.GenerateClearTestCsvDispatcherFilter;
+import org.unitedata.consumer.feature.gencleartest.GeneratePlainCsvForTestDispatcherFilter;
 import org.unitedata.consumer.feature.gendoupload.GenerateAndDoUploadCsvDispatcherFilter;
 import org.unitedata.consumer.feature.genquery.GenerateQueryCsvDispatcherFilter;
 import org.unitedata.consumer.feature.genupload.GenerateUploadCsvDispatcherFilter;
@@ -21,6 +21,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
 
 /**
+ *
+ * 可用业务介绍：
+ * 1 生成测试用二要素明文
+ * 2 读取二要素明文文件，生成密文文件
+ * 3 读取二要素明文文件并上传区块链，然后生成密文文件
+ * 4 读取二要素明文文件，生成斑马合约查询文件
+ * 5 读取斑马合约查询文件，进行查询
  * @author: hushi
  * @create: 2018/12/17
  */
@@ -83,7 +90,7 @@ public class Main implements Runnable{
         dispatcher.register(new GenerateUploadCsvDispatcherFilter(this));
         dispatcher.register(new GenerateAndDoUploadCsvDispatcherFilter(this));
         dispatcher.register(new GenerateQueryCsvDispatcherFilter(this));
-        dispatcher.register(new GenerateClearTestCsvDispatcherFilter(this));
+        dispatcher.register(new GeneratePlainCsvForTestDispatcherFilter(this));
         dispatcher.register(new QueryDispatcherFilter(this));
         dispatcher.dispatch();
 

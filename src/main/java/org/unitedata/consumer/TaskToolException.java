@@ -4,7 +4,7 @@ package org.unitedata.consumer;
  * @author: hushi
  * @create: 2019/03/13
  */
-public class TaskToolException extends Exception{
+public class TaskToolException extends RuntimeException{
     public TaskToolException() {
     }
 
