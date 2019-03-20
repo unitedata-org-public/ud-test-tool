@@ -1,7 +1,8 @@
-package org.unitedata.consumer.feature.gendoupload;
+package org.unitedata.consumer.feature.genupload;
 
 import lombok.Data;
 import org.unitedata.consumer.AbstractToolTask;
+import org.unitedata.consumer.BizConstants;
 import org.unitedata.consumer.Main;
 import org.unitedata.consumer.TaskToolException;
 import org.unitedata.consumer.model.ProofData;
@@ -25,9 +26,12 @@ public class BuildProofDataToolTask extends AbstractToolTask<String, ProofData>{
 
     @Override
     protected ProofData process(String s) throws TaskToolException {
+        if(s == null){
+            return null;
+        }
         if (s.equals(Main.INPUT_QUEUE_END_MARKER)){
             finish();
-            throw new TaskToolException("read END_MARKER, finish task");
+            return null;
         }
         return proofParserParser.toProofData(s);
     }
@@ -46,7 +50,7 @@ public class BuildProofDataToolTask extends AbstractToolTask<String, ProofData>{
     protected void preRun() {
         try {
             Main.INPUT_FILE_LINES.take();
-            Main.OUTPUT_QUEUE.put("逾期信息,静态随机数,二要素md5,基础数据md5,二要素凭证,交易id\n");
+            Main.OUTPUT_QUEUE.put(BizConstants.EncryptedCsvHeader);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

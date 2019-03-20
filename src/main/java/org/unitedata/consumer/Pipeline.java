@@ -13,7 +13,7 @@ import java.util.Map;
 public class Pipeline {
 
 
-    private Map<Integer,PipelineNode> nodes;
+    private Map<Integer, PipelineNode> nodes;
     private PipelineStartNode startNode;
     private PipelineEndNode endNode;
 
@@ -52,11 +52,11 @@ public class Pipeline {
         }
         long begin = System.currentTimeMillis();
 
-        for (Map.Entry<Integer, PipelineNode>node: nodes.entrySet()) {
+        for (Map.Entry<Integer, PipelineNode> node : nodes.entrySet()) {
             node.getValue().work();
         }
         endNode.write();
-        while(!taskIsFinished()) {
+        while (!taskIsFinished()) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {

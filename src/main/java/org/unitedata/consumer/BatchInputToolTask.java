@@ -49,6 +49,9 @@ public abstract class BatchInputToolTask<In, Out> implements ToolTask{
                 if (in == endMarker) {
                     break;
                 }
+                if(in == null){
+                    continue;
+                }
                 if (buf.size() < batchSize) {
                     buf.add(in);
                     if (buf.size() >= batchSize) {

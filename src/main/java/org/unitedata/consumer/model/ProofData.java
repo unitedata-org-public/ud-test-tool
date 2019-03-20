@@ -1,12 +1,17 @@
 package org.unitedata.consumer.model;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.unitedata.utils.JsonUtils;
+
+import java.io.IOException;
 
 /**
  * @author: hushi
  * @create: 2019/03/14
  */
 @Data
+@Slf4j
 public class ProofData {
 
     public static final ProofData END_MARKER = new ProofData();
@@ -24,4 +29,19 @@ public class ProofData {
     private String timestamp;
 
     private String transactionId;
+
+
+    public boolean checkOverdue(){
+        if(this.overdue == null){
+            return false;
+        }
+        try{
+            Overdue overdueObject = JsonUtils.toObject(overdue, Overdue.class);
+            return true;
+        }
+        catch (IOException ex){
+            log.error("Overdue data not valid",ex);
+            return false;
+        }
+    }
 }

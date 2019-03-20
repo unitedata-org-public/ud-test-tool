@@ -1,15 +1,12 @@
 package org.unitedata.consumer.feature.gendoupload;
 
 import org.unitedata.consumer.DispatcherFilter;
-import org.unitedata.consumer.FixedCountPipeline;
-import org.unitedata.consumer.FixedCountPipelineEndNode;
 import org.unitedata.consumer.Main;
 import org.unitedata.consumer.Pipeline;
 import org.unitedata.consumer.PipelineEndNode;
 import org.unitedata.consumer.PipelineNode;
-import org.unitedata.consumer.PipelineStartNode;
-import org.unitedata.consumer.feature.gencleartest.GenerateClearTestCsvToolTask;
-import org.unitedata.consumer.feature.genquery.GenerateQueryCsvToolTask;
+import org.unitedata.consumer.feature.genupload.BuildProofDataToolTask;
+import org.unitedata.consumer.feature.genupload.FilterProofDataToolTask;
 import org.unitedata.consumer.model.ProofData;
 
 /**
@@ -36,7 +33,9 @@ public class GenerateAndDoUploadCsvDispatcherFilter implements DispatcherFilter{
         Pipeline pipeline = new Pipeline();
         pipeline.startNode(new AddEndMarkerPipelineStartNode(s -> s != null && s.length() > 0, mainParam))
                 .addPipelineNode(new PipelineNode(new BuildProofDataToolTask(Main.INPUT_FILE_LINES, Main.PROOF_DATA_BLOCKING_QUEUE)))
+                .addPipelineNode(new PipelineNode(new FilterProofDataToolTask(Main.PROOF_DATA_BLOCKING_QUEUE, Main.PROOF_DATA_BLOCKING_QUEUE)))
                 .addPipelineNode(new PipelineNode(new PushProofDataToolTask(Main.PROOF_DATA_BLOCKING_QUEUE, Main.OUTPUT_QUEUE, 500, ProofData.END_MARKER, mainParam)))
+
                 .endNode(new PipelineEndNode(mainParam));
         return pipeline;
     }
