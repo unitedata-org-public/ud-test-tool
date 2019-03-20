@@ -24,13 +24,13 @@ public class PipelineNodes {
     }
 
     public static PipelineNode nodeBuildProofData(Pipeline pipeline){
-        PipelineNode node = new PipelineNode(pipeline);
+        PipelineNode node = new PipelineNode(pipeline, 2);
         ToolTask task = new BuildProofDataToolTask(node);
         return node;
     }
 
     public static PipelineNode nodeFilterProofData(Pipeline pipeline){
-        PipelineNode node = new PipelineNode(pipeline);
+        PipelineNode node = new PipelineNode(pipeline, 1);
         ToolTask task = new FilterProofDataToolTask(node);
         return node;
     }
@@ -42,7 +42,7 @@ public class PipelineNodes {
     }
 
     public static PipelineNode nodePushProofData(Pipeline pipeline, int batchSize, Main main){
-        PipelineNode node = new PipelineNode(pipeline);
+        PipelineNode node = new PipelineNode(pipeline, 2);
         ToolTask task = new PushProofDataToolTask(node, batchSize, main);
         return node;
     }

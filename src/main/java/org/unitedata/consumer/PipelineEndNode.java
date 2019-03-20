@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 
 /**
  * @author: hushi
+ * @author:sanbanfu
  * @create: 2019/03/13
  */
 @Slf4j
@@ -63,7 +64,7 @@ public class PipelineEndNode {
                         break;
                     }
                     line = (String)data.getPayload();
-                    log.info("输出日志 : " + line);
+                    log.debug("输出日志 : " + line);
                     this.outputEndPoint.write(line);
                 } catch (Exception e) {
                     Thread.currentThread().interrupt();

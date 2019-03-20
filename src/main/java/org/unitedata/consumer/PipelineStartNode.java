@@ -49,7 +49,7 @@ public class PipelineStartNode {
         Arrays.stream(mainParam.inputFiles).forEach(f -> {
             Path path = Paths.get(f.getAbsolutePath());
             try {
-                Files.lines(path).filter(Objects::nonNull).parallel().forEach(s -> {
+                Files.lines(path).filter(Objects::nonNull).skip(1).parallel().forEach(s -> {
                     try {
                         DataRecord dataRecord = DataRecords.createContentRecord(s, this.dataSend.incrementAndGet());
                         this.outputQueue.put(dataRecord);
