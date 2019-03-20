@@ -1,8 +1,6 @@
 package org.unitedata.consumer;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.unitedata.consumer.TaskToolException;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -45,9 +43,8 @@ public abstract class BatchInputToolTask<In, Out> implements ToolTask{
     public void run() {
         preRun();
         buf.clear();
-        List<Out> output;
         try {
-            while (true) {
+            while (!isFinished()) {
                 In in = inQueue.take();
                 if (in == endMarker) {
                     break;
@@ -72,7 +69,6 @@ public abstract class BatchInputToolTask<In, Out> implements ToolTask{
         }
 
 
-
     }
 
     private void processBufAndOutput() throws TaskToolException, InterruptedException {
@@ -94,5 +90,9 @@ public abstract class BatchInputToolTask<In, Out> implements ToolTask{
     @Override
     public void finish() {
         this.finished = true;
+    }
+
+    public boolean isFinished() {
+        return finished;
     }
 }
