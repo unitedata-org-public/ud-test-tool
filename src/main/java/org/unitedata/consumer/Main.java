@@ -66,7 +66,7 @@ public class Main implements Runnable{
     public String rpcServiceUrl;
     @Option(names = {"-gu","--generate-upload-csv"}, description = "不进行查询，读取明文csv，并创建密文参数csv供eds上传")
     public boolean generateUploadCsv = false;
-    @Option(names = {"-gq","--generate-query-csv"}, description = "不进行查询，读取明文csv，并创建密文查询参数csv")
+    @Option(names = {"-gq","--generate-query-csv"}, description = "不进行查询，读取明文csv，并创建查询文件")
     public boolean generateQueryCsv = false;
     @Option(names = {"-gt","--generate-test-csv"}, description = "不进行查询，生成测试用明文数据csv")
     public boolean generateTestCsv = false;

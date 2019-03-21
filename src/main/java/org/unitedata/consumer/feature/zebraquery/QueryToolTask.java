@@ -11,6 +11,7 @@ import org.unitedata.data.consumer.DataQueryClient;
 import org.unitedata.data.consumer.DataQueryProtocol;
 import org.unitedata.data.consumer.domain.CreditDataProducer;
 
+import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -46,6 +47,7 @@ public class QueryToolTask extends AbstractToolTask {
         try {
             CreditDataProducer[] ret = (CreditDataProducer[])protocol.creditQuery(mainParam.contractId, null,
                     in.getMd5Code(), in.getVerifyMd5Code(), false, in.getRequestedFactor());
+            //System.out.println("提供方列表" + String.join(",",Arrays.stream(ret).map(r->r.getAccount()+" "+r.getServiceUri()).toArray(String[]::new)));
             Boolean hit = false;
             StringBuilder sb = new StringBuilder("[");
             for (CreditDataProducer p : ret) {
@@ -61,9 +63,9 @@ public class QueryToolTask extends AbstractToolTask {
             result = new QueryOut(in, sb.toString()).toString();
         } catch (Exception e) {
             if (null != in) {
-                result = new QueryOut(in, "error").toString();
+                result = new QueryOut(in, "error:"+e.getMessage()).toString();
             } else {
-                result = "本条记录异常";
+                result = "本条记录异常:"+e.getMessage();
             }
         } finally {
             return result;

@@ -20,7 +20,7 @@ public class QueryDispatcherFilter implements DispatcherFilter {
     @Override
     public boolean isMatch() {
         // 只要不是生成的任务，就都认为是查询
-        return !(mainParam.generateUploadCsv || mainParam.generateQueryCsv || mainParam.generateTestCsv);
+        return !(mainParam.generateUploadCsv || mainParam.generateQueryCsv || mainParam.generateTestCsv || mainParam.generateAndUpload);
     }
 
     @Override
