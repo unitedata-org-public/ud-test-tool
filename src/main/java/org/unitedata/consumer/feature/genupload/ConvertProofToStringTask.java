@@ -1,17 +1,14 @@
 package org.unitedata.consumer.feature.genupload;
 
 import org.unitedata.consumer.AbstractToolTask;
-import org.unitedata.consumer.Pipeline;
 import org.unitedata.consumer.PipelineNode;
 import org.unitedata.consumer.TaskToolException;
-import org.unitedata.consumer.model.ProofData;
-import org.unitedata.consumer.util.ProofParserParser;
-
-import java.util.concurrent.BlockingQueue;
+import org.unitedata.consumer.feature.entity.ProofData;
+import org.unitedata.consumer.util.ProofFormatParser;
 
 public class ConvertProofToStringTask extends AbstractToolTask {
 
-    ProofParserParser parser = ProofParserParser.INSTANCE;
+    ProofFormatParser parser = new ProofFormatParser();
 
     public ConvertProofToStringTask(PipelineNode node) {
         super(node);
@@ -24,7 +21,7 @@ public class ConvertProofToStringTask extends AbstractToolTask {
             return null;
         }
 
-        return parser.fromProofDataToString(proofData);
+        return parser.toString(proofData);
     }
 
 

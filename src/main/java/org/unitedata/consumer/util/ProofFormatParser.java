@@ -2,8 +2,8 @@ package org.unitedata.consumer.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
-import org.unitedata.consumer.model.Overdue;
-import org.unitedata.consumer.model.ProofData;
+import org.unitedata.consumer.feature.entity.Overdue;
+import org.unitedata.consumer.feature.entity.ProofData;
 import org.unitedata.utils.JsonUtils;
 import org.unitedata.utils.ProduceHashUtil;
 
@@ -17,10 +17,70 @@ import java.util.Base64;
  * 二要素明文文件格式：用户名，身份证信息，逾期信息json
  */
 @Slf4j
-public enum ProofParserParser {
-    INSTANCE;
+public class ProofFormatParser {
 
-    public String[] parseAsEncryped(String plainText) {
+    /**
+     * 从明文转换得到凭证对象
+     */
+    public ProofData fromPlainText(String plainText){
+        String[] params = this.parseAsEncryped(plainText);
+        if(params == null){
+            return null;
+        }
+        ProofData proofData = new ProofData();
+        proofData.setOverdue(params[0]);
+        proofData.setRandom(params[1]);
+        proofData.setTwoHash(params[2]);
+        proofData.setBasicMd5(params[3]);
+        proofData.setTwoHashProof(params[4]);
+        proofData.setTimestamp(params[5]);
+        proofData.setTransactionId(params[6]);
+        return proofData;
+    }
+
+    /**
+     * 从密文转换成凭证对象
+     */
+    public ProofData fromEncryptedText(String encryped){
+        String[] splited = split(encryped);
+        if(splited == null){
+            log.error("Invalid formatted proof {}",encryped);
+            return null;
+        }
+        ProofData proofData = new ProofData();
+        try{
+            proofData = new ProofData();
+            proofData.setOverdue(splited[0]);
+            proofData.setRandom(splited[1]);
+            proofData.setTwoHash(splited[2]);
+            proofData.setBasicMd5(splited[3]);
+            proofData.setTwoHashProof(splited[4]);
+            proofData.setTimestamp(splited[5]);
+            proofData.setTransactionId("null".equals(splited[6])?null:splited[6]);;
+            return proofData;
+        }
+        catch (Exception ex){
+            log.error("Error parsing encryped data",ex);
+            return null;
+        }
+    }
+
+
+    public String toString(ProofData proofData){
+        StringBuilder sb = new StringBuilder();
+        String[] params = encrypedParams();
+        params[0] = proofData.getOverdue();
+        params[1] = proofData.getRandom();
+        params[2] = proofData.getTwoHash();
+        params[3] = proofData.getBasicMd5();
+        params[4] = proofData.getTwoHashProof();
+        params[5] = proofData.getTimestamp();
+        params[6] = proofData.getTransactionId();
+        sb.append(String.join(",", params)).append("\n");
+        return sb.toString();
+    }
+
+    private String[] parseAsEncryped(String plainText) {
         //修正输入参数的Unicode头
         plainText = this.fixUnicodeMagicHeader(plainText);
         //为逾期信息加密
@@ -73,6 +133,11 @@ public enum ProofParserParser {
     }
 
 
+    private String[] split(String text){
+        text = this.fixUnicodeMagicHeader(text);//去除BOM
+        return text.split(",");
+    }
+
     private String[] generateUploadCsvLine(String[] params) {
         String[] result = encrypedParams();
         try {
@@ -95,35 +160,7 @@ public enum ProofParserParser {
         }
     }
 
-    public ProofData toProofData(String plainText){
-        String[] params = this.parseAsEncryped(plainText);
-        if(params == null){
-            return null;
-        }
-        ProofData proofData = new ProofData();
-        proofData.setOverdue(params[0]);
-        proofData.setRandom(params[1]);
-        proofData.setTwoHash(params[2]);
-        proofData.setBasicMd5(params[3]);
-        proofData.setTwoHashProof(params[4]);
-        proofData.setTimestamp(params[5]);
-        proofData.setTransactionId(params[6]);
-        return proofData;
-    }
 
-    public String fromProofDataToString(ProofData proofData){
-        StringBuilder sb = new StringBuilder();
-        String[] params = encrypedParams();
-        params[0] = proofData.getOverdue();
-        params[1] = proofData.getRandom();
-        params[2] = proofData.getTwoHash();
-        params[3] = proofData.getBasicMd5();
-        params[4] = proofData.getTwoHashProof();
-        params[5] = proofData.getTimestamp();
-        params[6] = proofData.getTransactionId();
-        sb.append(String.join(",", params)).append("\n");
-        return sb.toString();
-    }
 
     private String[] encrypedParams(){
         return new String[7];

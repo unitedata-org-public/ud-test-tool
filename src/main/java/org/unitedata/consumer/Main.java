@@ -5,9 +5,8 @@ import org.unitedata.consumer.feature.gencleartest.GeneratePlainCsvForTestDispat
 import org.unitedata.consumer.feature.gendoupload.GenerateAndDoUploadCsvDispatcherFilter;
 import org.unitedata.consumer.feature.genquery.GenerateQueryCsvDispatcherFilter;
 import org.unitedata.consumer.feature.genupload.GenerateUploadCsvDispatcherFilter;
+import org.unitedata.consumer.feature.upload.UploadProofsDispatcherFilter;
 import org.unitedata.consumer.feature.zebraquery.QueryDispatcherFilter;
-import org.unitedata.consumer.model.ProofData;
-import org.unitedata.consumer.model.QueryIn;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Command;
@@ -15,10 +14,7 @@ import picocli.CommandLine.Parameters;
 
 import java.io.File;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  *
@@ -66,6 +62,8 @@ public class Main implements Runnable{
     public String rpcServiceUrl;
     @Option(names = {"-gu","--generate-upload-csv"}, description = "不进行查询，读取明文csv，并创建密文参数csv供eds上传")
     public boolean generateUploadCsv = false;
+    @Option(names = {"-up","--upload-proofs"}, description = "读取凭证密文，上传到区块链，并生成待入库eds的凭证密文")
+    public boolean uploadProofs = false;
     @Option(names = {"-gq","--generate-query-csv"}, description = "不进行查询，读取明文csv，并创建查询文件")
     public boolean generateQueryCsv = false;
     @Option(names = {"-gt","--generate-test-csv"}, description = "不进行查询，生成测试用明文数据csv")
@@ -86,6 +84,7 @@ public class Main implements Runnable{
         dispatcher.register(new GenerateQueryCsvDispatcherFilter(this));
         dispatcher.register(new GeneratePlainCsvForTestDispatcherFilter(this));
         dispatcher.register(new QueryDispatcherFilter(this));
+        dispatcher.register(new UploadProofsDispatcherFilter(this));
         dispatcher.dispatch();
 
         /*// 打印统计信息

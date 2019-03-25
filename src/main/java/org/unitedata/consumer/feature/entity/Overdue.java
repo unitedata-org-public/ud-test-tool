@@ -1,4 +1,4 @@
-package org.unitedata.consumer.model;
+package org.unitedata.consumer.feature.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

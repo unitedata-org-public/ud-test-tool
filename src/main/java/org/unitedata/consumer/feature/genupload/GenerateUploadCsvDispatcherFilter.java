@@ -24,7 +24,7 @@ public class GenerateUploadCsvDispatcherFilter implements DispatcherFilter {
     public Pipeline build() {
         Pipeline pipeline = new Pipeline();
         pipeline.startNode(new PipelineStartNode(mainParam, BizConstants.EncryptedCsvHeader))
-                .addPipelineNode(PipelineNodes.nodeBuildProofData(pipeline))
+                .addPipelineNode(PipelineNodes.nodeBuildProofDataFromPlainText(pipeline))
                 .addPipelineNode(PipelineNodes.nodeFilterProofData(pipeline))
                 .addPipelineNode(PipelineNodes.nodeConvertProofToString(pipeline))
                 .endNode(new PipelineEndNode(pipeline, mainParam));

@@ -5,12 +5,9 @@ import org.unitedata.consumer.feature.genquery.GenerateQueryCsvToolTask;
 import org.unitedata.consumer.feature.genupload.BuildProofDataToolTask;
 import org.unitedata.consumer.feature.genupload.ConvertProofToStringTask;
 import org.unitedata.consumer.feature.genupload.FilterProofDataToolTask;
+import org.unitedata.consumer.feature.upload.ParseEncrypedTextToEntityTask;
 import org.unitedata.consumer.feature.zebraquery.BuildingZebraQueryParamToolTask;
 import org.unitedata.consumer.feature.zebraquery.QueryToolTask;
-import org.unitedata.consumer.model.ProofData;
-import org.unitedata.consumer.model.QueryIn;
-
-import java.util.concurrent.BlockingQueue;
 
 /**
  * pipeline util
@@ -23,7 +20,7 @@ public class PipelineNodes {
         return node;
     }
 
-    public static PipelineNode nodeBuildProofData(Pipeline pipeline){
+    public static PipelineNode nodeBuildProofDataFromPlainText(Pipeline pipeline){
         PipelineNode node = new PipelineNode(pipeline, 2);
         ToolTask task = new BuildProofDataToolTask(node);
         return node;
@@ -56,6 +53,12 @@ public class PipelineNodes {
     public static PipelineNode nodeZebraQuery(Pipeline pipeline, Main main, int threads){
         PipelineNode node = new PipelineNode(pipeline, threads);
         ToolTask task = new QueryToolTask(node, main);
+        return node;
+    }
+
+    public static PipelineNode nodeBuildProofDataFromEncrypedText(Pipeline pipeline){
+        PipelineNode node = new PipelineNode(pipeline);
+        ToolTask task = new ParseEncrypedTextToEntityTask(node);
         return node;
     }
 }

@@ -1,4 +1,4 @@
-package org.unitedata.consumer.model;
+package org.unitedata.consumer.feature.entity;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +13,6 @@ import java.io.IOException;
 @Data
 @Slf4j
 public class ProofData {
-
-    public static final ProofData END_MARKER = new ProofData();
 
     private String overdue;
 

@@ -1,12 +1,7 @@
 package org.unitedata.consumer.feature.genupload;
 
-import lombok.Data;
 import org.unitedata.consumer.*;
-import org.unitedata.consumer.model.ProofData;
-import org.unitedata.consumer.util.ProofParserParser;
-
-import java.util.TimerTask;
-import java.util.concurrent.BlockingQueue;
+import org.unitedata.consumer.util.ProofFormatParser;
 
 /**
  * @author: hushi
@@ -15,7 +10,7 @@ import java.util.concurrent.BlockingQueue;
  */
 public class BuildProofDataToolTask extends AbstractToolTask{
 
-    private ProofParserParser proofParserParser = ProofParserParser.INSTANCE;
+    private ProofFormatParser proofParserParser = new ProofFormatParser();
 
 
     public BuildProofDataToolTask(PipelineNode node) {
@@ -28,7 +23,7 @@ public class BuildProofDataToolTask extends AbstractToolTask{
             return null;
         }
         String s = (String)in;
-        return proofParserParser.toProofData(s);
+        return proofParserParser.fromPlainText(s);
     }
 
 }

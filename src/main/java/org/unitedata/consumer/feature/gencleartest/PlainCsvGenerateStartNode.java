@@ -2,16 +2,13 @@ package org.unitedata.consumer.feature.gencleartest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.unitedata.consumer.*;
-import org.unitedata.consumer.model.Overdue;
+import org.unitedata.consumer.feature.entity.Overdue;
 import org.unitedata.consumer.protocal.DataRecord;
 import org.unitedata.consumer.util.DataRecords;
 import org.unitedata.consumer.util.HideUtils;
 import org.unitedata.utils.JsonUtils;
 
 import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Predicate;
 
 public class PlainCsvGenerateStartNode extends PipelineStartNode {
 

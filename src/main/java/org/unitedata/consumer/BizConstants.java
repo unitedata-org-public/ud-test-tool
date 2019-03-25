@@ -11,4 +11,6 @@ public class BizConstants {
     public final static String QueryCsvHeader = "二要素md5,凭证,动态随机数\n";
 
     public final static String QueryResultHeader = "二要素md5,基础数据md5,动态随机数,是否命中,提供方详情\n";
+
+
 }

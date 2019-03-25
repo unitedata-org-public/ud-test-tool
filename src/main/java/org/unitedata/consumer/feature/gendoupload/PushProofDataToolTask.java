@@ -7,8 +7,8 @@ import org.unitedata.consumer.BatchInputToolTask;
 import org.unitedata.consumer.Main;
 import org.unitedata.consumer.PipelineNode;
 import org.unitedata.consumer.TaskToolException;
-import org.unitedata.consumer.model.ProofData;
-import org.unitedata.consumer.util.ProofParserParser;
+import org.unitedata.consumer.feature.entity.ProofData;
+import org.unitedata.consumer.util.ProofFormatParser;
 import org.unitedata.eos.domain.transaction.Action;
 import org.unitedata.eos.domain.transaction.Authorizer;
 import org.unitedata.eos.domain.transaction.SignedTransaction;
@@ -24,7 +24,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.BlockingQueue;
 
 /**
  * @author: hushi
@@ -35,7 +34,7 @@ import java.util.concurrent.BlockingQueue;
 public class PushProofDataToolTask extends BatchInputToolTask{
 
     Main mainParam;
-    ProofParserParser parser = ProofParserParser.INSTANCE;
+    ProofFormatParser parser = new ProofFormatParser();
     EosClient eosClient;
 
 
@@ -123,7 +122,7 @@ public class PushProofDataToolTask extends BatchInputToolTask{
             for (Object obj: buf) {
                 ProofData proofData = (ProofData)obj;
                 proofData.setTransactionId(trxId);
-                String str = parser.fromProofDataToString(proofData);
+                String str = parser.toString(proofData);
                 output.add(str);
             }
         } catch (Exception e) {
