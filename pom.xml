@@ -38,7 +38,7 @@
                 </executions>
             </plugin>
         </plugins>
-        <finalName>test-tool</finalName>
+        <finalName>zebra-tool</finalName>
     </build>
     <dependencies>
         <dependency>
