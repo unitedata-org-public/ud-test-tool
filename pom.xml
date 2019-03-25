@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>test-tool</artifactId>
+    <artifactId>zebra-tool</artifactId>
 
     <build>
         <plugins>
@@ -38,6 +38,7 @@
                 </executions>
             </plugin>
         </plugins>
+        <finalName>test-tool</finalName>
     </build>
     <dependencies>
         <dependency>
@@ -49,6 +50,11 @@
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
             <version>3.8.2</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>RELEASE</version>
         </dependency>
     </dependencies>
 </project>
